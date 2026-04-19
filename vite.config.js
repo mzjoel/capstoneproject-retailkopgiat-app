@@ -13,7 +13,7 @@ export default defineConfig({
         vue()
     ],
     server: {
-        port: 9001,
+        port: 8001,
         strictPort: true,
         host: '0.0.0.0',
         hmr: {

@@ -7,3 +7,4 @@ Route::get('/', function(){
     return Inertia::render('Home');
 });
 
+
