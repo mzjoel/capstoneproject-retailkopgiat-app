@@ -1,0 +1,149 @@
+info:
+  name: Register
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: http://localhost:8000/api/v1/auth/signup
+  headers:
+    - name: Accept
+      value: application/json
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |
+      {
+        "email": "tester02@kampus.edu",
+        "password": "password123",
+        "password_confirmation": "password123",
+        "name": "Mahasiswa Tester",
+        "phone": "081122334455",
+        "address": "Asrama A",
+        "preferences": {
+          "taste": "sweet"
+        }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+examples:
+  - name: Positive
+    request:
+      url: http://localhost:8000/api/v1/auth/signup
+      method: POST
+      headers:
+        - name: Accept
+          value: application/json
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |
+          {
+            "email": "tester02@kampus.edu",
+            "password": "password123",
+            "password_confirmation": "password123",
+            "name": "Mahasiswa Tester",
+            "phone": "081122334455",
+            "address": "Asrama A",
+            "preferences": {
+              "taste": "sweet"
+            }
+          }
+    response:
+      status: 201
+      statusText: Created
+      headers:
+        - name: host
+          value: localhost:8000
+        - name: connection
+          value: close
+        - name: x-powered-by
+          value: PHP/8.4.20
+        - name: cache-control
+          value: no-cache, private
+        - name: date
+          value: Mon, 20 Apr 2026 03:20:56 GMT
+        - name: content-type
+          value: application/json
+        - name: access-control-allow-origin
+          value: "*"
+      body:
+        type: json
+        data: |-
+          {
+            "result": {
+              "status": "Success 201",
+              "message": "User with tester02@kampus.edu registered successfully"
+            },
+            "data": {
+              "user": {
+                "id": 2,
+                "email": "tester02@kampus.edu",
+                "role": "Customer"
+              },
+              "profile": {
+                "customer_profile_id": 2,
+                "name": "Mahasiswa Tester"
+              }
+            }
+          }
+  - name: Negative Case - Duplicate
+    request:
+      url: http://localhost:8000/api/v1/auth/signup
+      method: POST
+      headers:
+        - name: Accept
+          value: application/json
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |
+          {
+            "email": "tester02@kampus.edu",
+            "password": "password123",
+            "password_confirmation": "password123",
+            "name": "Mahasiswa Tester",
+            "phone": "081122334455",
+            "address": "Asrama A",
+            "preferences": {
+              "taste": "sweet"
+            }
+          }
+    response:
+      status: 422
+      statusText: Unprocessable Entity
+      headers:
+        - name: host
+          value: localhost:8000
+        - name: connection
+          value: close
+        - name: x-powered-by
+          value: PHP/8.4.20
+        - name: cache-control
+          value: no-cache, private
+        - name: date
+          value: Mon, 20 Apr 2026 03:21:23 GMT
+        - name: content-type
+          value: application/json
+        - name: access-control-allow-origin
+          value: "*"
+      body:
+        type: json
+        data: |-
+          {
+            "message": "The email has already been taken.",
+            "errors": {
+              "email": [
+                "The email has already been taken."
+              ]
+            }
+          }

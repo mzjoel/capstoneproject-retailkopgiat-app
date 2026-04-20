@@ -21,7 +21,7 @@ services:
       timeout: 5s
       retries: 5
     volumes:
-      - ./db_data:/var/lib/mysql
+      - mysql_data:/var/lib/mysql
     
   #phpmyadmin
   phpmyadmin:
@@ -45,7 +45,6 @@ networks:
     driver: bridge
   
 volumes:
-  mysqldata: 
-    driver: local
+  mysql_data: 
 
       
