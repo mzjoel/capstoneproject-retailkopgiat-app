@@ -1,0 +1,107 @@
+info:
+  name: Transactions Validation
+  type: http
+  seq: 12
+
+http:
+  method: POST
+  url: "{{base_url}}/transactions/validate"
+  headers:
+    - name: Accept
+      value: application/json
+    - name: Content-Type
+      value: application/json
+    - name: Authorization
+      value: Bearer 5|AYgX599SNv6SiCrJr1ZD4xUoaDyPBDGNQgbrS7g24d10a51e
+  body:
+    type: json
+    data: |-
+      {
+        "items": [
+          {
+            "product_id": 1,
+            "quantity": 2
+          }
+        ]
+      }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+examples:
+  - name: Positive
+    request:
+      url: "{{base_url}}/transactions/validate"
+      method: POST
+      headers:
+        - name: Accept
+          value: application/json
+        - name: Content-Type
+          value: application/json
+        - name: Authorization
+          value: Bearer 5|AYgX599SNv6SiCrJr1ZD4xUoaDyPBDGNQgbrS7g24d10a51e
+      body:
+        type: json
+        data: |-
+          {
+            "items": [
+              {
+                "product_id": 1,
+                "quantity": 2
+              }
+            ]
+          }
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: host
+          value: localhost:8000
+        - name: connection
+          value: close
+        - name: x-powered-by
+          value: PHP/8.4.20
+        - name: cache-control
+          value: no-cache, private
+        - name: date
+          value: Mon, 20 Apr 2026 14:34:05 GMT
+        - name: content-type
+          value: application/json
+        - name: access-control-allow-origin
+          value: "*"
+      body:
+        type: json
+        data: |-
+          {
+            "result": {
+              "status": "Success 200",
+              "message": "Payment details prepared. Please choose payment method."
+            },
+            "data": {
+              "items": [
+                {
+                  "product_id": 1,
+                  "name": "Ayam Geprek",
+                  "price": 17500,
+                  "quantity": 2,
+                  "sub_total": 35000
+                }
+              ],
+              "grand_total": 35000,
+              "payments": [
+                {
+                  "code": "qris",
+                  "name": "QRIS",
+                  "icon": "qr_code"
+                },
+                {
+                  "code": "cash",
+                  "name": "Tunai di Kasir",
+                  "icon": "payments"
+                }
+              ]
+            }
+          }

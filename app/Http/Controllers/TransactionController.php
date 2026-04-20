@@ -33,10 +33,10 @@ class TransactionController extends Controller{
                     'message' => 'Payment details prepared. Please choose payment method.'
                 ],
                 'data' => [
-                    'items_breakdown' => $calculation['items'],
+                    'items' => $calculation['items'],
                     'grand_total' => $calculation['total'],
-                    'available_payment_methods' => [
-                        ['code' => 'qris', 'name' => 'QRIS (Midtrans)', 'icon' => 'qr_code'],
+                    'payments' => [
+                        ['code' => 'qris', 'name' => 'QRIS', 'icon' => 'qr_code'],
                         ['code' => 'cash', 'name' => 'Tunai di Kasir', 'icon' => 'payments']
                     ]
                 ]
@@ -46,7 +46,7 @@ class TransactionController extends Controller{
         }
     }
 
-    private function calculateOrderSummary($items){
+    private function calculateOrderSummary(array $items, $index = 0, $currentTotal = 0, $validatedItems = []){
         foreach($items as $item){
             $product = Product::find($item['product_id']);
             if (!$product) {
@@ -64,17 +64,17 @@ class TransactionController extends Controller{
         }
         return [
             'items' => $validatedItems,
-            'total' => (float) $currentTotal
+            'total' => $currentTotal
         ];
     }
-    public function checkout(Request $request){
+
+    public function checkout(Request $request, ){
         $validator = Validator::make($request->all(), [
             'customer_profile_id' => 'required|exists:customer_profiles,id',
             'payment_method' => 'required|in:qris,cash',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|integer|min:1',
-            'items.*.note' => 'nullable|string|max:255',
         ]);
 
         if ($validator->fails()) {
@@ -92,8 +92,14 @@ class TransactionController extends Controller{
                     'order_id' => 'GIAT-' . time() . '-' . $request->customer_profile_id 
                 ]);
 
-                foreach ($orderDetails as $detail) {
-                    $transaction->details()->create($detail);
+                foreach ($request->items as $item) {
+                    $product = Product::find($item['product_id']);
+                    $transaction->details()->create([
+                        'product_id' => $item['product_id'],
+                        'quantity' => $item['quantity'],
+                        'price_transaction' => $product->price,
+                        'note' => $item['note'] ?? null
+                    ]);
                 }
 
                 // $paymentUrl = null;
@@ -108,9 +114,9 @@ class TransactionController extends Controller{
                     'data' => [
                         'transaction_id' => $transaction->id,
                         'order_id' => $transaction->order_id,
-                        'grand_total' => $grandTotal,
+                        'grand_total' => $calculation['total'],
                         'status' => $transaction->status,
-                        'payment_url' => $paymentUrl
+                        // 'payment_url' => $paymentUrl
                     ]
                 ], 201);
             });

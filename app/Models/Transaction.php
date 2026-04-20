@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Transaction extends Model
 {
-    protected $fillable = ['customer_profile_id', 'grand_total', 'status'];
+    protected $fillable = ['customer_profile_id', 'order_id', 'payment_method', 'grand_total', 'status'];
 
     public function customerProfile(): BelongsTo
     {

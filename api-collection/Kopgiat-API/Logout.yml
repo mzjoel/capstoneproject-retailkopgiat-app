@@ -8,7 +8,7 @@ http:
   url: "{{base_url}}/auth/signout"
   auth:
     type: bearer
-    token: 1|fJZLrWskYn3I40Dgx5zoWQnZOcMQzCsx0EWst3fH29761884
+    token: 1|UlgBpaQhvPKpgPqIgH3Fcr5H2YYn2rvjqlwHoHJY4e1b5ad3
 
 settings:
   encodeUrl: true
