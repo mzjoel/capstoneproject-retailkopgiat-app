@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace App\Modules\Analytics\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,7 +10,6 @@ class CustomerProfile extends Model
 {
     protected $fillable = ['user_id', 'name', 'phone', 'address', 'preferences'];
 
-    // Otomatis ubah JSON ke Array PHP
     protected $casts = [
         'preferences' => 'array',
     ];

@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Modules\Catalog\Controllers;
 
-use App\Models\Product;
-use App\Models\Category;
+use App\Http\Controllers\Controller; 
+use App\Modules\Catalog\Models\Product;
+use App\Modules\Catalog\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
