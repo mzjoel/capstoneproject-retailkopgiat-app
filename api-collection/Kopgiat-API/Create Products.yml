@@ -18,13 +18,13 @@ http:
     type: json
     data: |+
       {
-        "name": "Ayam Geprek",
-        "price": 15000,
-        "category_id": 3,
-        "tags": "spicy, meat, bestseller",
-        "ingredients": "chicken, chili, flour",
+        "name": "Roti Coklat",
+        "price": 2000,
+        "category_id": 1,
+        "tags": "Manis, Bisa Dibawa",
+        "ingredients": "coklat, tepung terigu",
         "nutrition": {
-          "calories": 450,
+          "calories": 200,
           "protein": "25g",
           "fat": "15g"
         }
