@@ -5,7 +5,7 @@ info:
 
 http:
   method: POST
-  url: "{{base_url}}/auth/signout"
+  url: "{{base_url}}/api/v1/auth/signout"
   auth:
     type: bearer
     token: 1|UlgBpaQhvPKpgPqIgH3Fcr5H2YYn2rvjqlwHoHJY4e1b5ad3

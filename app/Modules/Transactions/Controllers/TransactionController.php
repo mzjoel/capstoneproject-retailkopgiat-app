@@ -76,6 +76,10 @@ class TransactionController extends Controller{
                 'data' => [
                     'transaction_id' => $transaction->id,
                     'order_id' => $transaction->order_id,
+                    'payment_method' => $transaction->payment_method,
+                    'grand_total' => $transaction->grand_total,
+                    'items' => $transaction->items,
+                    
                     // 'payment_url' => $paymentUrl
                 ]
             ], 201);

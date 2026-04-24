@@ -5,7 +5,7 @@ info:
 
 http:
   method: POST
-  url: "{{base_url}}/products"
+  url: "{{base_url}}/api/v1/products"
   headers:
     - name: Authorization
       value: Bearer {{auth_token}}
@@ -18,7 +18,7 @@ http:
     type: json
     data: |+
       {
-        "name": "Roti Coklat",
+        "name": "Roti Keju",
         "price": 2000,
         "category_id": 1,
         "tags": "Manis, Bisa Dibawa",
