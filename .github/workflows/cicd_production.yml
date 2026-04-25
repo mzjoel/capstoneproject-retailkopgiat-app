@@ -15,7 +15,7 @@ jobs:
        uses: actions/checkout@v4
 
      - name: Execute Remote Deployment via Bastion Host
-       uses: appleboy/ssh-action@1.0.3
+       uses: appleboy/ssh-action@v1.0.3
        with:
          host: ${{ secrets.BASTION_IP}}
          username: ${{ secrets.REMOTE_USER}}
