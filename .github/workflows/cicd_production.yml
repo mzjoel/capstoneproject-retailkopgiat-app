@@ -32,13 +32,15 @@ jobs:
           # 1. Masuk ke direktori project
           cd /var/www/capstoneproject-retailkopgiat-app || exit
           
-          # 2. Amankan folder agar git bisa jalan (mencegah error permission)
+          # 2. Amankan folder agar git bisa jalan
           sudo chown -R ubuntu:www-data .
+          git config --global --add safe.directory /var/www/capstoneproject-retailkopgiat-app
           
-          # 3. Ambil file deploy.sh terbaru dari GitHub sebelum menjalankannya
-          # Ini penting agar jika ada perubahan di deploy.sh, perubahan itu terbawa dulu
+          # 3. Paksa sinkronisasi dengan GitHub (Nuclear Option)
+          # Ini akan menarik file deploy.sh yang baru Anda push tanpa error pathspec
           git fetch origin production
-          git checkout production deploy.sh
+          git reset --hard origin/production
+          git clean -fd
           
           # 4. Berikan izin eksekusi
           chmod +x deploy.sh
