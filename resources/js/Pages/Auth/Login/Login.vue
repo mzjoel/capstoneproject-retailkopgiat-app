@@ -75,7 +75,7 @@
           <div class="mt-12 text-center">
             <p class="text-on-surface-variant font-body text-sm">
               Belum punya akun?
-              <a href="#" class="text-primary font-bold ml-1 hover:underline underline-offset-4">
+              <a href="route('register')" class="text-primary font-bold ml-1 hover:underline underline-offset-4">
                 Daftar Disini
               </a>
             </p>

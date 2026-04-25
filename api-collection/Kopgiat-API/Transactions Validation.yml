@@ -12,14 +12,14 @@ http:
     - name: Content-Type
       value: application/json
     - name: Authorization
-      value: Bearer 6|RFCkvBXbIK5WxnqERJHCRzhFU9dnBOgcQ3jPg7Il5f4d86d3
+      value: Bearer 1|5TYjHFJeVpnhQHQx4oSapw0kOgRoLNmLLYypS9pa20960231
   body:
     type: json
     data: |-
       {
         "items": [
           {
-            "product_id": 43,
+            "product_id": 1,
             "quantity": 2
           }
         ]
