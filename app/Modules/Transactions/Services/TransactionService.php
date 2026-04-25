@@ -42,30 +42,34 @@ class TransactionService{
     }
 
 
-    public function createTransaction(array $data){
-        return DB::transaction(function () use ($data){
+    public function createTransaction(array $data)
+    {
+        return DB::transaction(function () use ($data) {
+
             $validated = $this->validateTransaction($data['items']);
 
             $transaction = Transaction::create([
                 'customer_profile_id' => $data['customer_profile_id'],
-                'order_id' => 'GIAT-' . time() . '-' . $data['customer_profile_id'],
-                'grand_total' => $validated['total'],
-                'payment_method' => $data['payment_method'],
-                'status' => 'pending'
+                'order_id'            => 'GIAT-' . time() . '-' . $data['customer_profile_id'],
+                'grand_total'         => $validated['total'],
+                'payment_method'      => $data['payment_method'],
+                'status'              => 'pending'
             ]);
 
+            // 3. Simpan Detail Transaksi ke Database
             foreach ($validated['items'] as $item) {
                 $transaction->details()->create([
-                    'product_id' => $item['product_id'],
-                    'quantity' => $item['quantity'],
+                    'product_id'           => $item['product_id'],
+                    'quantity'             => $item['quantity'],
                     'price_transaction' => $item['price'],
-                    // 'note' => $item['note']
                 ]);
             }
+            $transaction->setAttribute('items', $validated['items']);
 
             return $transaction;
         });
     }
+
 
     public function updateTransactionStatus($orderId, $newStatus){
         $transaction = Transaction::where('order_id', $orderId)->first();

@@ -92,7 +92,7 @@
           <div class="mt-12 text-center">
             <p class="text-on-surface-variant font-body text-sm">
               Sudah punya akun?
-              <a href="#" class="text-primary font-bold ml-1 hover:underline underline-offset-4">
+              <a href="route('login')" class="text-primary font-bold ml-1 hover:underline underline-offset-4">
                 Login Disini
               </a>
             </p>

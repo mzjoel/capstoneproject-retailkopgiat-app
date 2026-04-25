@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Modules\Catalog\Controllers\ProductController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -17,6 +18,24 @@ Route::get('/', function () {
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::get('/products', function () {
+    return Inertia::render('Catalog/Products');
+})->middleware(['auth', 'verified'])->name('products');
+
+Route::get('/cart', function () {
+    return Inertia::render('Transaction/Cart');
+})->middleware(['auth', 'verified'])->name('cart');
+
+Route::get('/transaction/{id}/history', function ($id) {
+    return Inertia::render('Transaction/Checkout', ['id' => $id]);
+})->middleware(['auth', 'verified'])->name('transaction');
+
+Route::get('/transaction/validation', function () {
+    return Inertia::render('Transaction/Validation');
+})->middleware(['auth', 'verified'])->name('validation');
+
+Route::get('/products/{id}', [ProductController::class, 'showProductPage'])->middleware(['auth', 'verified'])->name('products.detail');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

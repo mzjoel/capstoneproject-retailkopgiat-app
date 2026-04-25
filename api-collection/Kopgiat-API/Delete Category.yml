@@ -5,7 +5,7 @@ info:
 
 http:
   method: DELETE
-  url: "{{base_url}}/categories/2"
+  url: "{{base_url}}/api/v1/categories/14"
   headers:
     - name: Accept
       value: application/json

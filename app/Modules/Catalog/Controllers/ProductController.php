@@ -8,6 +8,7 @@ use App\Modules\Catalog\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Inertia\Inertia;
 
 class ProductController extends Controller 
 {
@@ -87,6 +88,8 @@ class ProductController extends Controller
                     'id' => $product->category->id,
                     'name' => $product->category->name
                 ],
+                'image' => $product->image,
+                'is_available' => (bool) $product->is_available,
                 'product_features' => [
                     'tags' => $product->tags,
                     'ingredients' => $product->ingredients,
@@ -143,6 +146,8 @@ class ProductController extends Controller
                 'name' => $product->name,
                 'price' => (float) $product->price,
                 'category' => $product->category,
+                'image' => $product->image,
+                'is_available' => (bool) $product->is_available,
                 'product_features' => [
                     'tags' => $product->tags,
                     'ingredients' => $product->ingredients,
@@ -150,6 +155,43 @@ class ProductController extends Controller
                 ]
             ]
         ], 200);
+    }
+
+    /**
+     * Show Product Detail Page (Inertia)
+     */
+    public function showProductPage($id)
+    {
+        $product = Product::with('category')->findOrFail($id);
+
+        return Inertia::render('Catalog/DetailProducts', [
+            'product' => [
+                'id' => $product->id,
+                'name' => $product->name,
+                'description' => $product->description,
+                'price' => 'Rp ' . number_format($product->price, 0, ',', '.'),
+                'raw_price' => (float) $product->price,
+                'category' => $product->category->name,
+                'rating' => '4.8', // Placeholder for now
+                'stock' => 24,    // Placeholder for now
+                'contextBadge' => 'Menu Pilihan', // Placeholder
+                'image' => $product->image ?: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80',
+                'is_available' => (bool) $product->is_available,
+                'thumbnails' => [
+                    $product->image ?: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80',
+                    'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80'
+                ],
+                'meta' => [
+                    ['icon' => 'schedule', 'label' => 'Estimasi', 'value' => '15-20 Menit'],
+                    ['icon' => 'local_fire_department', 'label' => 'Energi', 'value' => '540 Kcal'],
+                ],
+                'product_features' => [
+                    'tags' => $product->tags,
+                    'ingredients' => $product->ingredients,
+                    'nutrition' => $product->nutrition
+                ]
+            ]
+        ]);
     }
 
     /**

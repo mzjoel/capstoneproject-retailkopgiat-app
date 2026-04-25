@@ -5,14 +5,14 @@ info:
 
 http:
   method: POST
-  url: "{{base_url}}/transactions/validate"
+  url: "{{base_url}}/api/v1/transactions/validate"
   headers:
     - name: Accept
       value: application/json
     - name: Content-Type
       value: application/json
     - name: Authorization
-      value: Bearer 6|RFCkvBXbIK5WxnqERJHCRzhFU9dnBOgcQ3jPg7Il5f4d86d3
+      value: Bearer 1|5TYjHFJeVpnhQHQx4oSapw0kOgRoLNmLLYypS9pa20960231
   body:
     type: json
     data: |-

@@ -10,6 +10,7 @@ use App\Modules\Transactions\Services\TransactionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
 use Exception;
 
 class TransactionController extends Controller{
@@ -50,7 +51,8 @@ class TransactionController extends Controller{
     }
 
     
-    public function checkout(Request $request, ){
+    public function checkout(Request $request)
+    {
         $validator = Validator::make($request->all(), [
             'customer_profile_id' => 'required|exists:customer_profiles,id',
             'payment_method' => 'required|in:qris,cash',
@@ -71,21 +73,39 @@ class TransactionController extends Controller{
             //     $paymentUrl = "https://app.sandbox.midtrans.com/snap/v2/vtweb/" . bin2hex(random_bytes(8));
             // }
 
+            if ($request->header('X-Inertia')) {
+                return redirect()->route('transaction', ['id' => $transaction->id]);
+            }
+
             return response()->json([
                 'result' => ['status' => 'Success 201', 'message' => 'Order created'],
                 'data' => [
                     'transaction_id' => $transaction->id,
                     'order_id' => $transaction->order_id,
+                    'payment_method' => $transaction->payment_method,
+                    'grand_total' => $transaction->grand_total,
+                    'items' => $transaction->items,
+                    
                     // 'payment_url' => $paymentUrl
                 ]
             ], 201);
         }catch(Exception $e){
-            return response()->json(['result' => ['status' => 'Error 500', 'message' => $e->getMessage()]], 500);
+            \Log::error('Checkout error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json([
+                'result' => [
+                    'status' => 'Error 500', 
+                    'message' => 'Internal Server Error: ' . $e->getMessage() . ' in ' . basename($e->getFile()) . ':' . $e->getLine()
+                ]
+            ], 500);
         }
     }
 
     public function getTransactionStatus($id){
-        $transaction = Transaction::with('details.product')->findOrFail($id);
+        $transaction = Transaction::with('details.product.category')->findOrFail($id);
         return response()->json(['result' => ['status' => 'Success 200'], 'data' => $transaction]);
     }
 

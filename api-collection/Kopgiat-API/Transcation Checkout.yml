@@ -5,7 +5,7 @@ info:
 
 http:
   method: POST
-  url: "{{base_url}}/transactions"
+  url: "{{base_url}}/api/v1/transactions"
   headers:
     - name: Authorization
       value: Bearer 4|d3gLj96PF69xNqZleRKy3IMAqMH9dE2VK8qzvfMjf7637e98
@@ -21,8 +21,12 @@ http:
         "payment_method": "cash",
         "items": [
           {
-            "product_id": 1,
+            "product_id": 40,
             "quantity": 2
+          },
+          {
+            "product_id": 2,
+            "quantity": 1
           }
         ]
       }

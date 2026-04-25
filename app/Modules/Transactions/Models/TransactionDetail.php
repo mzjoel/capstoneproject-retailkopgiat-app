@@ -4,6 +4,7 @@ namespace App\Modules\Transactions\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Modules\Catalog\Models\Product;
 
 class TransactionDetail extends Model
 {
