@@ -19,12 +19,12 @@ jobs:
       with:
         # Perhatikan kurung kurawal ganda {{ ... }}
         host: ${{ secrets.APP_SERVER_IP }}
-        username: ${{ secrets.REMOTE_USER }}
+        username: ubuntu
         key: ${{ secrets.GIATEXPRESS_KEY }}
         
         # Proxy (Bastion)
         proxy_host: ${{ secrets.BASTION_IP }}
-        proxy_username: ${{ secrets.REMOTE_USER }}
+        proxy_username: ec2-user
         proxy_key: ${{ secrets.GIATEXPRESS_KEY }}
         debug: true
 
