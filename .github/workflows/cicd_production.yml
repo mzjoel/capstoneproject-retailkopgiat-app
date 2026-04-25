@@ -17,14 +17,12 @@ jobs:
      - name: Execute Remote Deployment via Bastion Host
        uses: appleboy/ssh-action@v1.0.3
        with:
-         host: ${{ secrets.BASTION_IP}}
+         host: ${{ secrets.APPSERVER_IP}}
          username: ${{ secrets.REMOTE_USER}}
          key: ${{ secrets.GIATEXPRESS_KEY }}
          proxy_host: ${{ secrets.BASTION_IP}}
          proxy_username: ${{ secrets.REMOTE_USER }}
          proxy_key: ${{ secrets.GIATEXPRESS_KEY }}
-
-         target_host: ${{ secrets.APPSERVER_IP}}
 
          script: |
            echo "Connetion SSH to Appserver: ${{ secrets.APPSERVER_IP}}"
