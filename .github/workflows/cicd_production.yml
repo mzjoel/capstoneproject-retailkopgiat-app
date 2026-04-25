@@ -29,8 +29,19 @@ jobs:
         debug: true
 
         script: |
-          echo "Debug: Host yang diterima adalah: ${{ secrets.APP_SERVER_IP }}"
-          echo "Debug: Bastion yang diterima adalah: ${{ secrets.BASTION_IP }}"
+          # 1. Masuk ke direktori project
+          cd /var/www/capstoneproject-retailkopgiat-app || exit
           
-          cd /var/www/capstoneproject-retailkopgiat-app
-          bash deploy.sh
+          # 2. Amankan folder agar git bisa jalan (mencegah error permission)
+          sudo chown -R ubuntu:www-data .
+          
+          # 3. Ambil file deploy.sh terbaru dari GitHub sebelum menjalankannya
+          # Ini penting agar jika ada perubahan di deploy.sh, perubahan itu terbawa dulu
+          git fetch origin production
+          git checkout production deploy.sh
+          
+          # 4. Berikan izin eksekusi
+          chmod +x deploy.sh
+          
+          # 5. Jalankan skrip
+          ./deploy.sh
