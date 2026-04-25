@@ -1,0 +1,32 @@
+name : Deployment Production To AWS
+
+on:
+  push:
+    - production 
+
+jobs:
+  deploy:
+     name: Deployment Application
+     runs-on: ubuntu-latest
+
+     steps:
+     - name: Checkout code
+       uses: actions/checkout@v4
+
+     - name: Execute Remote Deployment via Bastion Host
+       uses: appleboy/ssh-action@1.0.3
+       with:
+         host: ${{ secrets.BASTION_IP}}
+         username: ${{ secrets.REMOTE_USER}}
+         key: ${{ secrets.GIATEXPRESS_KEY }}
+         proxy_host: ${{ secrets.BASTION_IP}}
+         proxy_username: ${{ secrets.REMOTE_USER }}
+         proxy_key: ${{ secrets.GIATEXPRESS_KEY }}
+
+         target_host: ${{ secrets.APPSERVER_IP}}
+
+         script: |
+           echo "Connetion SSH to Appserver: ${{ secrets.APPSERVER_IP}}"
+           cd /var/www/capstoneproject-retailkopgiat-app
+
+           ./deploy.sh
