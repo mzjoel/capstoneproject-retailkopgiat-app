@@ -33,4 +33,4 @@ jobs:
           echo "Debug: Bastion yang diterima adalah: ${{ secrets.BASTION_IP }}"
           
           cd /var/www/capstoneproject-retailkopgiat-app
-          ./deploy.sh
+          bash deploy.sh
