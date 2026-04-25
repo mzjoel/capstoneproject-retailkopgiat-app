@@ -26,6 +26,7 @@ jobs:
         proxy_host: ${{ secrets.BASTION_IP }}
         proxy_username: ${{ secrets.REMOTE_USER }}
         proxy_key: ${{ secrets.GIATEXPRESS_KEY }}
+        debug: true
 
         script: |
           echo "Debug: Host yang diterima adalah: ${{ secrets.APP_SERVER_IP }}"
