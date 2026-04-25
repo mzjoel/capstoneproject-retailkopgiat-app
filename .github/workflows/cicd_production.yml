@@ -1,32 +1,35 @@
-name : Deployment Production To AWS
+name: Deployment Production To AWS
 
 on:
   push:
     branches:
-    - production 
+      - production 
 
 jobs:
   deploy:
-     name: Deployment Application
-     runs-on: ubuntu-latest
+    name: Deployment Application
+    runs-on: ubuntu-latest
 
-     steps:
-     - name: Checkout code
-       uses: actions/checkout@v4
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-     - name: Execute Remote Deployment via Bastion Host
-       uses: appleboy/ssh-action@v1.0.3
-       with:
-         host: ${{ secrets.APP_SERVER_IP}}
-         username: ${{ secrets.REMOTE_USER}}
-         key: ${{ secrets.GIATEXPRESS_KEY }}
-         proxy_host: ${{ secrets.BASTION_IP}}
-         proxy_username: ${{ secrets.REMOTE_USER }}
-         proxy_key: ${{ secrets.GIATEXPRESS_KEY }}
+    - name: Execute Remote Deployment via Bastion Host
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        # Perhatikan kurung kurawal ganda {{ ... }}
+        host: ${{ secrets.APP_SERVER_IP }}
+        username: ${{ secrets.REMOTE_USER }}
+        key: ${{ secrets.GIATEXPRESS_KEY }}
+        
+        # Proxy (Bastion)
+        proxy_host: ${{ secrets.BASTION_IP }}
+        proxy_username: ${{ secrets.REMOTE_USER }}
+        proxy_key: ${{ secrets.GIATEXPRESS_KEY }}
 
-         script: |
-           echo "Debug: Host yang diterima adalah: ${{ secrets.APP_SERVER_IP }}"
-            echo "Debug: Bastion yang diterima adalah: ${{ secrets.BASTION_IP }}"
-            
-            cd /var/www/capstoneproject-retailkopgiat-app
-            ./deploy.sh
+        script: |
+          echo "Debug: Host yang diterima adalah: ${{ secrets.APP_SERVER_IP }}"
+          echo "Debug: Bastion yang diterima adalah: ${{ secrets.BASTION_IP }}"
+          
+          cd /var/www/capstoneproject-retailkopgiat-app
+          ./deploy.sh
