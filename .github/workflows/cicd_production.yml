@@ -2,6 +2,7 @@ name : Deployment Production To AWS
 
 on:
   push:
+    branches:
     - production 
 
 jobs:
