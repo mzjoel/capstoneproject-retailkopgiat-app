@@ -272,6 +272,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { usePage, Link, router } from '@inertiajs/vue3'
 import { cart } from '@/Stores/cart'
+import { route } from 'ziggy-js'
 
 const page = usePage()
 

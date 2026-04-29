@@ -11,7 +11,6 @@ class AnalyticService{
        public function logBatchInteractions(int $customerProfileId, array $interactions)
     {
         $timestamp = now();
-        $weather = $this->getCurrentWeatherSnapshot();
         $preparedLogs = [];
 
         foreach ($interactions as $item) {
@@ -20,8 +19,8 @@ class AnalyticService{
                 'product_id' => $item['product_id'],
                 'type' => $item['type'],
                 'duration_seconds' => $item['payload']['duration'] ?? null,
-                'weather_condition' => $weather['condition'],
-                'temperature' => $weather['temp'],
+                // 'weather_condition' => 'null',
+                // 'temperature' => 'null',
                 'created_at' => $timestamp,
             ];
         }

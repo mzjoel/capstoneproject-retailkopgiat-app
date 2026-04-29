@@ -10,18 +10,19 @@ use Illuminate\Support\Facades\Log;
 
 class InteractionController extends Controller{
 
-    protected $interactionService;
+    protected $analyticService;
 
-    public function __construct(InteractionService $interactionService)
+    public function __construct(AnalyticService $analyticService)
     {
-        $this->interactionService = $interactionService;
+        $this->analyticService = $analyticService;
     }
 
-    public function storeInteractions(Request $request){
+    public function storeInteraction(Request $request){
         $validator = Validator::make($request->all(), [
             'interactions' => 'required|array|min:1|max:50',
             'interactions.*.product_id' => 'required|exists:products,id',
             'interactions.*.type' => 'required|string',
+            'interactions.*.payload' => 'nullable|array',
         ]);
 
         if ($validator->fails()) {
@@ -29,14 +30,29 @@ class InteractionController extends Controller{
         }
 
         try {
-            $customerProfileId = $request->user()->customerProfile->id;
-            $this->interactionService->logBatchInteractions($customerProfileId, $request->interactions);
+            $user = $request->user();
+            if (!$user->customerProfile) {
+                return response()->json([
+                    'result' => ['status' => 'Error 404', 'message' => 'User profile not found. Please complete registration.']
+                ], 404);
+            }
+            $customerProfileId = $user->customerProfile->id;
+            $this->analyticService->logBatchInteractions($customerProfileId, $request->interactions);
 
             return response()->json([
-                'result' => ['status' => 'Success 201', 'message' => 'Interactions logged with context.']
+                'result' => [
+                    'status' => 'Success 201',
+                    'message' => 'Interactions logged with context.'
+                ]
             ], 201);
         } catch (\Exception $e) {
-            return response()->json(['result' => ['status' => 'Error 500', 'message' => $e->getMessage()]], 500);
+            Log::error("Tracking Error: " . $e->getMessage());
+            return response()->json([
+                'result' => [
+                    'status' => 'Error 500',
+                    'message' => $e->getMessage()
+                ]
+            ], 500);
         }
     }
 
