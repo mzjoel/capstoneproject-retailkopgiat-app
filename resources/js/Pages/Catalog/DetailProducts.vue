@@ -251,7 +251,7 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { usePage, Link, router } from '@inertiajs/vue3'
 import { cart } from '@/Stores/cart'
 import { route } from 'ziggy-js'
-import axios from 'axios'
+// import axios from 'axios'
 
 const logout = () => {
   router.post(route('logout'))
@@ -314,33 +314,46 @@ function logInteraction(type, payloadData = {}) {
     //console.log(`[Tracking] Batch size sekarang: ${interactionsBatch.value.length}`);
 }
 
-async function sendTrackingData() {
+function sendTrackingData() {
     if (interactionsBatch.value.length === 0 || !authUser.value) return
     
-    try {
-        await axios.post('/api/v1/user/interactions', {
-            interactions: interactionsBatch.value
-        }, {
-            headers: { 'Accept': 'application/json' },
-            withCredentials: true
-        });
-        // Kosongkan batch jika berhasil
-        interactionsBatch.value = [];
-    } catch (error) {
+    const url = '/api/v1/user/interactions';
+    const body = JSON.stringify({ interactions: interactionsBatch.value });
+
+    fetch(url, {
+        method: 'POST',
+        headers: { 
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-XSRF-TOKEN': getCsrfToken() 
+        },
+        body: body,
+        keepalive: true, 
+        credentials: 'include'
+    }).catch(error => {
         console.error('[Tracking Error]:', {
             status: error.response?.status,
             message: error.response?.data?.result?.message || error.message,
             payload: interactionsBatch.value
         });
-    }
+    });
+
+    // Kosongkan batch segera setelah instruksi kirim diberikan
+    interactionsBatch.value = [];
 }
 
 
-// function getCookie(name) {
-//     const value = `; ${document.cookie}`;
-//     const parts = value.split(`; ${name}=`);
-//     if (parts.length === 2) return decodeURIComponent(parts.pop().split(';').shift());
-// }
+function getCsrfToken() {
+    const name = "XSRF-TOKEN=";
+    const decodedCookie = decodeURIComponent(document.cookie);
+    const ca = decodedCookie.split(';');
+    for(let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) == ' ') { c = c.substring(1); }
+        if (c.indexOf(name) == 0) { return c.substring(name.length, c.length); }
+    }
+    return "";
+}
 
 // --- UI METHODS ---
 function goBack() { window.history.back() }
