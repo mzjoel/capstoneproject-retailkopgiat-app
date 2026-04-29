@@ -75,9 +75,9 @@
           <div class="mt-12 text-center">
             <p class="text-on-surface-variant font-body text-sm">
               Belum punya akun?
-              <a href="route('register')" class="text-primary font-bold ml-1 hover:underline underline-offset-4">
+              <Link :href="route('register')" class="text-primary font-bold ml-1 hover:underline underline-offset-4">
                 Daftar Disini
-              </a>
+              </Link>
             </p>
           </div>
 
@@ -91,10 +91,11 @@
 </template>
 
 <script setup>
-import { Head, useForm } from '@inertiajs/vue3'
+import { Head, Link, useForm } from '@inertiajs/vue3'
 import BrandingPanel from './Components/BrandingPanel.vue'
 import AuthInput from './Components/AuthInput.vue'
 import AppFooter from './Components/AppFooter.vue'
+import { route } from 'ziggy-js'
 
 const form = useForm({
   name: '',
