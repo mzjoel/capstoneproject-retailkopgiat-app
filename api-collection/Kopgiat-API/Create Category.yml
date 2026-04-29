@@ -1,0 +1,82 @@
+info:
+  name: Create Category
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{base_url}}/api/v1/categories"
+  headers:
+    - name: Authorization
+      value: Bearer {{auth_token}}
+      disabled: true
+    - name: Accept
+      value: application/json
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |+
+      { "name": "testcategory01" }
+
+  auth:
+    type: bearer
+    token: 3|UlgBpaQhvPKpgPqIgH3Fcr5H2YYn2rvjqlwHoHJY4e1b5ad3
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+examples:
+  - name: Positive Case
+    request:
+      url: "{{base_url}}/categories"
+      method: POST
+      headers:
+        - name: Authorization
+          value: Bearer {{auth_token}}
+          disabled: true
+        - name: Accept
+          value: application/json
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |+
+          { "name": "Snacks" }
+
+    response:
+      status: 201
+      statusText: Created
+      headers:
+        - name: host
+          value: localhost:8000
+        - name: connection
+          value: close
+        - name: x-powered-by
+          value: PHP/8.4.20
+        - name: cache-control
+          value: no-cache, private
+        - name: date
+          value: Mon, 20 Apr 2026 08:26:28 GMT
+        - name: content-type
+          value: application/json
+        - name: access-control-allow-origin
+          value: "*"
+      body:
+        type: json
+        data: |-
+          {
+            "result": {
+              "status": "Success 201",
+              "message": "Category created successfully"
+            },
+            "data": {
+              "name": "Snacks",
+              "updated_at": "2026-04-20T08:26:28.000000Z",
+              "created_at": "2026-04-20T08:26:28.000000Z",
+              "id": 2
+            }
+          }

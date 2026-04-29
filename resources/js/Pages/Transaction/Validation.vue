@@ -1,0 +1,427 @@
+<template>
+  <div class="bg-surface text-on-surface min-h-screen">
+
+    <nav class="fixed top-0 w-full z-50 glass-nav">
+      <div class="flex justify-between items-center px-4 md:px-6 py-3 md:py-4 w-full max-w-7xl mx-auto">
+
+        <!-- Logo + Desktop Links -->
+        <div class="flex items-center gap-6 md:gap-8">
+          <span class="text-lg md:text-xl font-black tracking-tight" style="color: #800000; font-family: 'Manrope', sans-serif;">
+            Koperasi Giat
+          </span>
+          <div class="hidden md:flex items-center gap-2">
+            <Link
+              v-for="link in navLinks"
+              :key="link.label"
+              :href="link.url"
+              :class="[
+                'font-bold px-3 py-1 rounded-lg transition-colors text-sm',
+                link.active
+                  ? 'text-primary bg-surface-container-high'
+                  : 'text-on-surface-variant hover:bg-surface-container-high'
+              ]"
+              style="font-family: 'Manrope', sans-serif;"
+            >
+              {{ link.label }}
+            </Link>
+          </div>
+        </div>
+
+        <!-- Right Actions -->
+        <div class="flex items-center gap-2 md:gap-4">
+          <template v-if="authUser">
+            <!-- Mobile search toggle -->
+            <button
+              class="md:hidden p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-colors"
+              @click="showMobileSearch = !showMobileSearch"
+            >
+              <span class="material-symbols-outlined">search</span>
+            </button>
+
+            <Link :href="route('cart')" class="p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-colors active:scale-95 relative">
+              <span class="material-symbols-outlined">shopping_cart</span>
+              <span
+                v-if="cart.count > 0"
+                class="absolute -top-1 -right-1 bg-primary text-white text-[8px] w-4 h-4 rounded-full flex items-center justify-center font-bold"
+              >{{ cart.count }}</span>
+            </Link>
+
+            <button class="hidden md:block p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-colors active:scale-95">
+              <span class="material-symbols-outlined">notifications</span>
+            </button>
+
+            <div class="flex items-center group relative cursor-pointer ml-1">
+              <div class="w-8 h-8 rounded-full overflow-hidden bg-surface-container-high">
+                <img
+                  :src="displayAvatar"
+                  :alt="displayName"
+                  class="w-full h-full object-cover"
+                />
+              </div>
+              <!-- Dropdown Logout -->
+              <div class="absolute right-0 top-10 w-48 bg-surface-container-lowest rounded-xl shadow-xl border border-outline-variant/10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[60] p-2">
+                <button @click="logout" class="w-full text-left px-4 py-3 rounded-lg hover:bg-error/10 text-error flex items-center gap-3 transition-colors">
+                  <span class="material-symbols-outlined text-sm">logout</span>
+                  <span class="font-bold text-sm">Logout</span>
+                </button>
+              </div>
+            </div>
+          </template>
+          <template v-else>
+            <Link :href="route('login')" class="text-on-surface-variant hover:text-primary font-bold text-sm">Login</Link>
+            <Link :href="route('register')" class="bg-primary text-white px-6 py-2 rounded-full font-bold text-sm shadow-lg hover:scale-105 transition-all">Sign Up</Link>
+          </template>
+        </div>
+      </div>
+
+      <!-- Mobile Search Expandable -->
+      <div
+        v-show="showMobileSearch"
+        class="md:hidden px-4 pb-3"
+      >
+        <div class="flex items-center bg-surface-container-low px-4 py-2.5 rounded-full">
+          <span class="material-symbols-outlined text-on-surface-variant text-lg mr-2">search</span>
+          <input
+            v-model="searchQuery"
+            class="bg-transparent border-none focus:ring-0 text-sm w-full placeholder:text-on-surface-variant"
+            placeholder="Cari menu segar..."
+            type="text"
+            autofocus
+          />
+        </div>
+      </div>
+
+      <div class="bg-outline-variant/20 h-px w-full"></div>
+    </nav>
+
+    <!-- Main -->
+    <main class="pt-20 md:py-[15vh] pb-36 md:pb-16 px-4 md:px-6  max-w-6xl mx-auto">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12">
+
+        <!-- Left: Order Summary -->
+        <div class="lg:col-span-7 space-y-6 md:space-y-8">
+
+          <section>
+            <div class="flex items-center justify-between mb-5 md:mb-6">
+              <h2 class="text-2xl md:text-3xl font-extrabold font-headline tracking-tight text-primary">
+                Konfirmasi Pesanan
+              </h2>
+              <Link :href="route('cart')" class="text-primary font-bold text-sm flex items-center gap-1.5 hover:underline decoration-2 underline-offset-4 transition-all">
+                <span class="material-symbols-outlined text-sm">edit</span>
+                Ubah Pesanan
+              </Link>
+            </div>
+
+            <!-- Summary Order Card -->
+            <div class="bg-surface-container-lowest rounded-2xl overflow-hidden shadow-[0_12px_32px_rgba(128,0,0,0.06)] border border-outline-variant/10">
+              <div class="p-5 md:p-6 bg-surface-container-low/50 border-b border-outline-variant/10">
+                <h3 class="font-bold text-on-surface flex items-center gap-2">
+                  <span class="material-symbols-outlined text-primary text-xl">shopping_basket</span>
+                  Ringkasan Menu
+                </h3>
+              </div>
+              <div class="divide-y divide-outline-variant/10">
+                <div
+                  v-for="item in cart.items"
+                  :key="item.id"
+                  class="p-4 md:p-5 flex items-center justify-between gap-4"
+                >
+                  <div class="flex items-center gap-4">
+                    <img
+                      :src="item.image"
+                      :alt="item.name"
+                      class="w-12 h-12 md:w-16 md:h-16 rounded-lg object-cover flex-shrink-0"
+                    />
+                    <div>
+                      <h4 class="font-bold text-on-surface text-sm md:text-base leading-tight">{{ item.name }}</h4>
+                      <p class="text-xs text-on-surface-variant mt-0.5">{{ item.qty }} x {{ formatRupiah(item.price) }}</p>
+                    </div>
+                  </div>
+                  <span class="font-bold text-primary text-sm md:text-base">
+                    {{ formatRupiah(item.price * item.qty) }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Weather / Campus Note -->
+          <div class="bg-secondary-container/10 p-4 md:p-6 rounded-xl flex items-center gap-3 md:gap-4">
+            <span class="material-symbols-outlined text-secondary text-2xl md:text-3xl flex-shrink-0">light_mode</span>
+            <div>
+              <p class="font-bold text-secondary text-sm md:text-base">Cerah di Kampus</p>
+              <p class="text-xs md:text-sm text-on-surface-variant">Nikmati pesananmu di taman pusat koperasi.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Payment & Total -->
+        <div class="lg:col-span-5">
+          <div class="bg-surface-container-low p-6 md:p-8 rounded-2xl md:rounded-3xl lg:sticky lg:top-28">
+            <h2 class="text-lg md:text-xl font-bold font-headline text-on-surface mb-5 md:mb-6">
+              Detail Pembayaran
+            </h2>
+
+            <!-- Payment Methods -->
+            <div class="space-y-3 mb-6 md:mb-8">
+              <label
+                v-for="method in paymentMethods"
+                :key="method.value"
+                class="block cursor-pointer"
+              >
+                <input
+                  type="radio"
+                  name="payment"
+                  :value="method.value"
+                  v-model="selectedPayment"
+                  class="sr-only peer"
+                />
+                <div
+                  :class="[
+                    'flex items-center justify-between p-3 md:p-4 bg-surface-container-lowest rounded-xl border-2 transition-all',
+                    selectedPayment === method.value
+                      ? 'border-primary'
+                      : 'border-transparent hover:border-outline-variant/40'
+                  ]"
+                >
+                  <div class="flex items-center gap-3 md:gap-4">
+                    <span class="material-symbols-outlined text-primary text-xl md:text-2xl">{{ method.icon }}</span>
+                    <span class="font-semibold text-sm md:text-base">{{ method.label }}</span>
+                  </div>
+                  <!-- Radio indicator -->
+                  <div
+                    :class="[
+                      'w-4 h-4 md:w-5 md:h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0',
+                      selectedPayment === method.value
+                        ? 'border-primary bg-primary'
+                        : 'border-outline-variant'
+                    ]"
+                  >
+                    <div
+                      v-if="selectedPayment === method.value"
+                      class="w-1.5 h-1.5 md:w-2 md:h-2 bg-white rounded-full"
+                    ></div>
+                  </div>
+                </div>
+              </label>
+            </div>
+
+            <!-- Price Breakdown -->
+            <div class="space-y-3 md:space-y-4 pt-5 md:pt-6 border-t border-outline-variant/30">
+              <div class="flex justify-between text-on-surface-variant text-sm md:text-base">
+                <span>Subtotal</span>
+                <span>{{ formatRupiah(subtotal) }}</span>
+              </div>
+              <div class="flex justify-between items-center pt-3 md:pt-4">
+                <span class="text-base md:text-lg font-bold text-on-surface">Total Pembayaran</span>
+                <span class="text-xl md:text-2xl font-black text-primary font-headline tracking-tighter">
+                  {{ formatRupiah(total) }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Pay Button -->
+            <button
+              @click="handlePayment"
+              :disabled="isLoading"
+              class="w-full mt-8 md:mt-10 py-4 md:py-5 btn-gradient text-white rounded-full font-bold text-base md:text-lg shadow-xl hover:scale-[1.02] active:scale-95 transition-transform flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <span v-if="isLoading" class="animate-spin material-symbols-outlined text-sm">progress_activity</span>
+              <span>{{ isLoading ? 'Memproses...' : 'Bayar Sekarang' }}</span>
+              <span v-if="!isLoading" class="material-symbols-outlined">payments</span>
+            </button>
+
+            <p class="text-center text-xs text-on-surface-variant mt-4 md:mt-6 px-2 md:px-4 leading-relaxed">
+              Dengan membayar, Anda menyetujui syarat dan ketentuan Koperasi Giat Mahasiswa.
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+    <!-- Bottom Navigation Bar (Mobile Only) -->
+    <nav class="md:hidden fixed bottom-0 left-0 w-full z-50 glass-nav flex justify-around items-center px-4 pb-8 pt-4 rounded-t-3xl shadow-[0_-8px_24px_rgba(128,0,0,0.04)]">
+      <button
+        v-for="item in bottomNav"
+        :key="item.label"
+        :class="[
+          'flex flex-col items-center justify-center transition-transform active:scale-90',
+          item.active ? 'text-primary' : 'text-on-surface-variant'
+        ]"
+      >
+        <span
+          class="material-symbols-outlined"
+          :style="item.active ? 'font-variation-settings: \'FILL\' 1' : ''"
+        >{{ item.icon }}</span>
+        <span class="text-[10px] font-bold uppercase tracking-widest mt-1">{{ item.label }}</span>
+        <span v-if="item.active" class="w-1 h-1 bg-primary rounded-full mt-0.5"></span>
+      </button>
+    </nav>
+
+  </div>
+</template>
+
+<script setup>
+import { ref, computed, onMounted } from 'vue'
+import { usePage, Link, router } from '@inertiajs/vue3'
+import { cart } from '@/Stores/cart'
+
+const page = usePage()
+
+// User
+const authUser = computed(() => page.props.auth.user)
+const displayName = computed(() => {
+  return authUser.value?.customer_profile?.name || authUser.value?.admin_profile?.name || authUser.value?.email || 'User'
+})
+const displayAvatar = computed(() => {
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName.value)}&color=7F9CF5&background=EBF4FF`
+})
+
+// Nav links
+const navLinks = [
+  { label: 'Beranda', url: route('dashboard'), active: true },
+  { label: 'Menu', url: route('products'), active: false },
+  { label: 'Pesanan', url: '#', active: false },
+]
+
+// Bottom nav
+const bottomNav = [
+  { icon: 'restaurant_menu', label: 'Menu', url: route('products'), active: false },
+  { icon: 'assignment', label: 'Orders', url: '#', active: false },
+  { icon: 'shopping_bag', label: 'Cart', url: route('cart'), active: true },
+  { icon: 'person', label: 'Profile', url: '#', active: false },
+]
+
+// Payment methods from API
+const paymentMethods = ref([
+  { value: 'cash', label: 'Tunai', icon: 'payments' },
+])
+const selectedPayment = ref('qris')
+const validationData = ref(null)
+const isLoading = ref(false)
+
+// Computed
+const subtotal = computed(() => cart.subtotal)
+const total = computed(() => subtotal.value)
+
+// Helpers
+function formatRupiah(amount) {
+  return 'Rp ' + (amount || 0).toLocaleString('id-ID')
+}
+
+// Methods
+const validateOrder = async () => {
+  if (cart.items.length === 0) return
+
+  try {
+    isLoading.value = true
+    const response = await window.axios.post('/api/v1/transactions/validate', {
+      items: cart.items.map(item => ({
+        product_id: item.id,
+        quantity: item.qty
+      }))
+    })
+    validationData.value = response.data.data
+    // Update payment methods if API provides them
+    if (response.data.data.available_payment_methods) {
+      paymentMethods.value = response.data.data.available_payment_methods.map(m => ({
+        value: m.code,
+        label: m.name,
+        icon: m.code === 'qris' ? 'qr_code_2' : 'payments'
+      }))
+      // Set default payment to the first available method
+      if (paymentMethods.value.length > 0) {
+        selectedPayment.value = paymentMethods.value[0].value
+      }
+    }
+  } catch (error) {
+    console.error('Validation failed:', error)
+  } finally {
+    isLoading.value = false
+  }
+}
+
+onMounted(() => {
+  validateOrder()
+})
+
+async function handlePayment() {
+  if (isLoading.value) return
+  if (cart.items.length === 0) {
+    alert('Keranjang belanja kosong!')
+    return
+  }
+
+  const customerProfileId = authUser.value?.customer_profile?.id
+  if (!customerProfileId) {
+    alert('Profil pelanggan tidak ditemukan. Pastikan Anda masuk sebagai Pelanggan.')
+    return
+  }
+
+  isLoading.value = true
+  console.log('Initiating checkout for customer profile:', customerProfileId)
+
+  router.post('/api/v1/transactions', {
+    customer_profile_id: customerProfileId,
+    payment_method: selectedPayment.value,
+    items: cart.items.map(item => ({
+      product_id: item.id,
+      quantity: item.qty
+    }))
+  }, {
+    onSuccess: () => {
+      console.log('Checkout successful')
+      cart.items = [] // Clear cart on success
+    },
+    onError: (errors) => {
+      console.error('Checkout failed:', errors)
+      const errorMsg = Object.values(errors)[0] || 'Terjadi kesalahan saat memproses pesanan.'
+      alert('Gagal membuat pesanan: ' + errorMsg)
+    },
+    onFinish: () => {
+      isLoading.value = false
+    }
+  })
+}
+</script>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
+
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background-color: #faf9f6;
+}
+
+.font-headline {
+  font-family: 'Manrope', sans-serif;
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+.glass-nav {
+  background: rgba(250, 249, 246, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.btn-gradient {
+  background: linear-gradient(135deg, #570000 0%, #800000 100%);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+</style>

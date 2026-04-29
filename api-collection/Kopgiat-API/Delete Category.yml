@@ -1,0 +1,118 @@
+info:
+  name: Delete Category
+  type: http
+  seq: 6
+
+http:
+  method: DELETE
+  url: "{{base_url}}/api/v1/categories/14"
+  headers:
+    - name: Accept
+      value: application/json
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: ""
+  auth:
+    type: bearer
+    token: 3|UlgBpaQhvPKpgPqIgH3Fcr5H2YYn2rvjqlwHoHJY4e1b5ad3
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+examples:
+  - name: Positive
+    request:
+      url: "{{base_url}}/categories"
+      method: GET
+      headers:
+        - name: Accept
+          value: application/json
+        - name: Content-Type
+          value: application/json
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: host
+          value: localhost:8000
+        - name: connection
+          value: close
+        - name: x-powered-by
+          value: PHP/8.4.20
+        - name: cache-control
+          value: no-cache, private
+        - name: date
+          value: Mon, 20 Apr 2026 08:29:16 GMT
+        - name: content-type
+          value: application/json
+        - name: access-control-allow-origin
+          value: "*"
+      body:
+        type: json
+        data: |-
+          {
+            "result": {
+              "status": "Success 200",
+              "message": "All Category Success Retrieved"
+            },
+            "data": [
+              {
+                "id": 1,
+                "name": "Soft Drinks",
+                "created_at": "2026-04-20T08:09:13.000000Z",
+                "updated_at": "2026-04-20T08:09:13.000000Z",
+                "deleted_at": null
+              },
+              {
+                "id": 2,
+                "name": "Snacks",
+                "created_at": "2026-04-20T08:26:28.000000Z",
+                "updated_at": "2026-04-20T08:26:28.000000Z",
+                "deleted_at": null
+              }
+            ]
+          }
+  - name: Positive
+    request:
+      url: "{{base_url}}/categories/2"
+      method: DELETE
+      headers:
+        - name: Accept
+          value: application/json
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: ""
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: host
+          value: localhost:8000
+        - name: connection
+          value: close
+        - name: x-powered-by
+          value: PHP/8.4.20
+        - name: cache-control
+          value: no-cache, private
+        - name: date
+          value: Mon, 20 Apr 2026 08:32:16 GMT
+        - name: content-type
+          value: application/json
+        - name: access-control-allow-origin
+          value: "*"
+      body:
+        type: json
+        data: |-
+          {
+            "result": {
+              "status": "Success 200",
+              "message": "Category deleted"
+            }
+          }

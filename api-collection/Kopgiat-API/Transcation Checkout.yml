@@ -1,0 +1,98 @@
+info:
+  name: Transcation Checkout
+  type: http
+  seq: 13
+
+http:
+  method: POST
+  url: "{{base_url}}/api/v1/transactions"
+  headers:
+    - name: Authorization
+      value: Bearer 4|d3gLj96PF69xNqZleRKy3IMAqMH9dE2VK8qzvfMjf7637e98
+    - name: Accept
+      value: application/json
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |
+      {
+        "customer_profile_id": 1,
+        "payment_method": "cash",
+        "items": [
+          {
+            "product_id": 40,
+            "quantity": 2
+          },
+          {
+            "product_id": 2,
+            "quantity": 1
+          }
+        ]
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+examples:
+  - name: Positive
+    request:
+      url: "{{base_url}}/transactions"
+      method: POST
+      headers:
+        - name: Authorization
+          value: Bearer 4|d3gLj96PF69xNqZleRKy3IMAqMH9dE2VK8qzvfMjf7637e98
+        - name: Accept
+          value: application/json
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |
+          {
+            "customer_profile_id": 1,
+            "payment_method": "cash",
+            "items": [
+              {
+                "product_id": 1,
+                "quantity": 2
+              }
+            ]
+          }
+    response:
+      status: 201
+      statusText: Created
+      headers:
+        - name: host
+          value: localhost:8000
+        - name: connection
+          value: close
+        - name: x-powered-by
+          value: PHP/8.4.20
+        - name: cache-control
+          value: no-cache, private
+        - name: date
+          value: Mon, 20 Apr 2026 14:54:20 GMT
+        - name: content-type
+          value: application/json
+        - name: access-control-allow-origin
+          value: "*"
+      body:
+        type: json
+        data: |-
+          {
+            "result": {
+              "status": "Success 201",
+              "message": "Order created successfully"
+            },
+            "data": {
+              "transaction_id": 5,
+              "order_id": "GIAT-1776696860-1",
+              "grand_total": 35000,
+              "status": "pending"
+            }
+          }
