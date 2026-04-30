@@ -172,27 +172,24 @@
       </section>
 
       <!-- Categories -->
-      <!-- <section class="space-y-6">
-        <div class="flex items-center justify-between">
-          <h2 class="text-2xl font-bold text-on-surface">Kategori</h2>
-          <button class="text-primary font-bold text-sm">Lihat Semua</button>
-        </div>
-        <div class="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
-          <button
-            v-for="cat in categories"
-            :key="cat"
-            @click="activeCategory = cat"
-            :class="[
-              'px-8 py-3 rounded-full font-bold whitespace-nowrap transition-colors',
-              activeCategory === cat
-                ? 'bg-primary text-on-primary scale-105 shadow-lg'
-                : 'bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest'
-            ]"
-          >
-            {{ cat }}
-          </button>
-        </div>
-      </section> -->
+      <div v-if="isCategoriesLoading" class="flex gap-3 mb-10 overflow-x-auto pb-2 no-scrollbar">
+        <div v-for="i in 5" :key="i" class="h-10 w-24 bg-surface-container-high rounded-full animate-pulse"></div>
+      </div>
+      <div v-else class="flex gap-2 md:gap-3 mb-8 md:mb-10 overflow-x-auto pb-2 no-scrollbar">
+        <button
+          v-for="cat in categories"
+          :key="cat"
+          @click="selectCategory(cat)"
+          :class="[
+            'px-5 md:px-6 py-2 md:py-2.5 rounded-full font-semibold whitespace-nowrap text-sm transition-all duration-200',
+            activeCategory === cat
+              ? 'bg-primary text-on-primary scale-105 shadow-md'
+              : 'bg-surface-container-high text-on-surface-variant hover:opacity-80'
+          ]"
+        >
+          {{ cat }}
+        </button>
+      </div>
 
       <!-- Recommendations -->
       <section class="space-y-6">
@@ -202,45 +199,55 @@
         <div v-if="isLoading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <div v-for="i in 4" :key="i" class="animate-pulse bg-surface-container-low rounded-xl h-64"></div>
         </div>
-        <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div
-            v-for="item in menuItems"
-            :key="item.id"
-            class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-[0_12px_32px_rgba(128,0,0,0.06)] group hover:-translate-y-1 transition-all duration-300"
+        <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-8">
+        <div
+          v-for="item in filteredItems"
+          :key="item.id"
+          class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300 group flex flex-col border border-outline-variant/10"
+        >
+          <Link 
+            :href="route('products.detail', item.id)" 
+            class="block flex-grow"
+            @click="trackProductClick(item)"
           >
-            <div class="h-40 overflow-hidden">
+            <!-- Image -->
+            <div class="relative aspect-[4/3] overflow-hidden">
               <img
-                :src="item.image"
+                :src="item.image_url || item.image"
                 :alt="item.name"
-                class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
             </div>
-            <div class="p-6 space-y-4">
-              <div class="flex justify-between items-start">
-                <h3 class="font-bold text-lg leading-tight">{{ item.name }}</h3>
-                <span class="bg-surface-container-low p-1 rounded-full">
-                  <span
-                    class="material-symbols-outlined text-sm text-primary"
-                    style="font-variation-settings: 'FILL' 1"
-                  >star</span>
-                </span>
+
+            <!-- Info -->
+            <div class="p-4 md:p-6 flex flex-col">
+              <div class="flex justify-between items-start mb-3 md:mb-4 gap-2">
+                <h3 class="font-bold text-lg md:text-xl text-on-surface leading-tight" style="font-family: 'Manrope', sans-serif;">
+                  {{ item.name }}
+                </h3>
+                <span class="font-bold text-secondary whitespace-nowrap">Rp {{ item.price }}</span>
               </div>
-              <div class="flex items-center gap-2 text-on-surface-variant text-sm">
-                <span class="material-symbols-outlined text-sm">category</span>
-                <span>{{ item.category.name }}</span>
-              </div>
-              <div class="flex justify-between items-center pt-2">
-                <span class="text-primary font-bold text-xl">{{ item.formattedPrice }}</span>
-                <button
-                  @click="addToCart(item)"
-                  class="p-2 bg-surface-container-low rounded-full text-primary hover:bg-primary hover:text-white transition-colors"
-                >
-                  <span class="material-symbols-outlined">add</span>
-                </button>
-              </div>
+              <p class="text-sm text-on-surface-variant mb-6 md:mb-8 line-clamp-2 leading-relaxed">
+                {{ item.description || 'Deskripsi menu lezat ini.' }}
+              </p>
             </div>
+          </Link>
+          
+          <div class="px-4 pb-4 md:px-6 md:pb-6 mt-auto">
+            <button
+              @click="addToCart(item)"
+              class="w-full bg-gradient-to-r from-primary to-[#a00000] text-white py-2.5 md:py-3 rounded-xl font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform duration-200 text-sm md:text-base"
+            >
+              <span class="material-symbols-outlined text-lg">add_shopping_cart</span>
+              Tambah
+            </button>
           </div>
         </div>
+      </div>
+      <div v-if="filteredItems.length === 0" class="text-center py-20">
+        <span class="material-symbols-outlined text-outline text-6xl mb-4 block">search_off</span>
+        <p class="text-on-surface-variant font-medium">Tidak ada menu ditemukan.</p>
+      </div>
       </section>
 
     </main>
@@ -269,7 +276,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, onBeforeUnmount } from 'vue'
 import { usePage, Link, router } from '@inertiajs/vue3'
 import { cart } from '@/Stores/cart'
 import { route } from 'ziggy-js'
@@ -278,9 +285,11 @@ const page = usePage()
 
 // State
 const searchQuery = ref('')
-const activeCategory = ref('Semua')
+const activeCategory = ref('Semua Menu')
 const menuItems = ref([])
+const apiCategories = ref([])
 const isLoading = ref(true)
+const isCategoriesLoading = ref(true)
 const showMobileSearch = ref(false)
 
 // User
@@ -313,22 +322,22 @@ const bestseller = {
 }
 
 // Categories
-const categories = ['Semua', 'Minuman', 'Makanan Berat', 'Camilan', 'Pastry', 'Sehat']
+const categories = computed(() => ['Semua Menu', ...apiCategories.value.map(c => c.name)])
 
 // Methods
 const fetchProducts = async () => {
   try {
     isLoading.value = true
     const response = await window.axios.get('/api/v1/products')
-    // Ambil maksimal 4 data
-    menuItems.value = response.data.data.slice(0, 4).map(item => ({
+    menuItems.value = response.data.data.map(item => ({
       ...item,
       image: item.image || `https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80`,
       formattedPrice: new Intl.NumberFormat('id-ID', {
         style: 'currency',
         currency: 'IDR',
         minimumFractionDigits: 0
-      }).format(item.price)
+      }).format(item.price),
+      description: item.description || item.ingredients || 'Nikmati kesegaran menu pilihan kami yang dibuat dengan bahan berkualitas.'
     }))
   } catch (error) {
     console.error('Failed to fetch products:', error)
@@ -337,8 +346,111 @@ const fetchProducts = async () => {
   }
 }
 
+const fetchCategories = async () => {
+  try {
+    isCategoriesLoading.value = true
+    const response = await window.axios.get('/api/v1/categories')
+    apiCategories.value = response.data.data
+  } catch (error) {
+    console.error('Failed to fetch categories:', error)
+  } finally {
+    isCategoriesLoading.value = false
+  }
+}
+
 onMounted(() => {
   fetchProducts()
+  fetchCategories()
+  entryTime = Date.now();
+})
+
+onBeforeUnmount (()=>{
+  sendTrackingData();
+});
+
+function getCsrfToken(){
+  const name = "XSRF-TOKEN=";
+  const decodedCookie = decodeURIComponent(document.cookie);
+  const ca = decodedCookie.split(';');
+  for(let i = 0; i < ca.length; i++) {
+    let c = ca[i];
+    while (c.charAt(0) == ' ') { c = c.substring(1); }
+    if (c.indexOf(name) == 0) { return c.substring(name.length, c.length); }
+  }
+  return "";
+}
+
+const interactionsBatch = ref([]);
+let entryTime = 0;
+
+function logInteraction(productId, type, payloadData = {}){
+  if(!authUser.value) return;
+  interactionsBatch.value.push({
+    product_id: productId,
+    type: type,
+    payload: {
+      ...payloadData,
+      timestamp: new Date().toISOString()
+    }
+  });
+}
+
+function sendTrackingData(){
+  if(interactionsBatch.value.length === 0 || !authUser.value) return;
+
+  const url = '/api/v1/user/interactions';
+  const body = JSON.stringify({ interactions: interactionsBatch.value});
+  fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-TOKEN': getCsrfToken(),
+    },
+    body: body,
+    credentials: 'include'
+  }).catch(err => {
+    console.error('Failed to send tracking data:', err);
+  });
+  interactionsBatch.value = [];
+}
+
+function formatLabel(text){
+  if(!text) return 'unknown';
+  if (typeof text === 'object' && text.name) {
+    text = text.name;
+  } else if (typeof text !== 'string') {
+    text = String(text);
+  }
+  return text.toLowerCase().replace(/[^a-z0-9]/g, '_');
+}
+
+function trackProductClick(item){
+  const categoryName = typeof item.category === 'object' ? item.category.name : item.category;
+  logInteraction(item.id, 'click_product_catalog', {
+        category: formatLabel(categoryName || 'unknown')
+    });
+}
+
+function addToCart(item){
+  cart.add(item);
+  logInteraction(item.id, 'add_to_cart_catalog', {
+    action_source: 'catalog_grid'
+  })
+}
+
+function selectCategory(cat) {
+    activeCategory.value = cat;
+}
+
+const filteredItems = computed(() => {
+  return menuItems.value.filter(item => {
+    const matchCategory =
+      activeCategory.value === 'Semua Menu' || item.category.name === activeCategory.value
+    const matchSearch =
+      !searchQuery.value ||
+      item.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+    return matchCategory && matchSearch
+  })
 })
 
 // Bottom nav
@@ -354,10 +466,6 @@ const logout = () => {
   router.post(route('logout'))
 }
 
-function addToCart(item) {
-  cart.add(item)
-  console.log('Added to cart:', item.name)
-}
 </script>
 
 <style>
