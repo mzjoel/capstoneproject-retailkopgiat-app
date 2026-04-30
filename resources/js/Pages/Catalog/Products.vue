@@ -104,7 +104,7 @@
           class="text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight mb-2 md:mb-3"
           style="color: #800000; font-family: 'Manrope', sans-serif;"
         >
-          Menu Segar Hari Ini
+          Daftar Menu 
         </h1>
         <p class="text-on-surface-variant text-base md:text-lg max-w-2xl leading-relaxed">
           Pilihan favorit untuk mendinginkan harimu di kampus.
@@ -119,7 +119,7 @@
         <button
           v-for="cat in categories"
           :key="cat"
-          @click="activeCategory = cat"
+          @click="selectCategory(cat)"
           :class="[
             'px-5 md:px-6 py-2 md:py-2.5 rounded-full font-semibold whitespace-nowrap text-sm transition-all duration-200',
             activeCategory === cat
@@ -135,17 +135,22 @@
       <div v-if="isLoading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-8">
         <div v-for="i in 6" :key="i" class="bg-surface-container-lowest rounded-xl h-80 animate-pulse"></div>
       </div>
+
       <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-8">
         <div
           v-for="item in filteredItems"
           :key="item.id"
-          class="bg-surface-container-lowest rounded-xl overflow-hidden product-shadow group flex flex-col"
+          class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300 group flex flex-col border border-outline-variant/10"
         >
-          <Link :href="route('products.detail', item.id)" class="block flex-grow">
+          <Link 
+            :href="route('products.detail', item.id)" 
+            class="block flex-grow"
+            @click="trackProductClick(item)"
+          >
             <!-- Image -->
             <div class="relative aspect-[4/3] overflow-hidden">
               <img
-                :src="item.image"
+                :src="item.image_url || item.image"
                 :alt="item.name"
                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
@@ -157,10 +162,10 @@
                 <h3 class="font-bold text-lg md:text-xl text-on-surface leading-tight" style="font-family: 'Manrope', sans-serif;">
                   {{ item.name }}
                 </h3>
-                <span class="font-bold text-secondary whitespace-nowrap">{{ item.formattedPrice }}</span>
+                <span class="font-bold text-secondary whitespace-nowrap">Rp {{ item.price }}</span>
               </div>
               <p class="text-sm text-on-surface-variant mb-6 md:mb-8 line-clamp-2 leading-relaxed">
-                {{ item.description }}
+                {{ item.description || 'Deskripsi menu lezat ini.' }}
               </p>
             </div>
           </Link>
@@ -168,15 +173,14 @@
           <div class="px-4 pb-4 md:px-6 md:pb-6 mt-auto">
             <button
               @click="addToCart(item)"
-              class="w-full primary-gradient text-white py-2.5 md:py-3 rounded-xl font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform duration-200 text-sm md:text-base"
+              class="w-full bg-gradient-to-r from-primary to-[#a00000] text-white py-2.5 md:py-3 rounded-xl font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform duration-200 text-sm md:text-base"
             >
               <span class="material-symbols-outlined text-lg">add_shopping_cart</span>
-              Add to Cart
+              Tambah
             </button>
           </div>
         </div>
       </div>
-
       <!-- Empty State -->
       <div v-if="filteredItems.length === 0" class="text-center py-20">
         <span class="material-symbols-outlined text-outline text-6xl mb-4 block">search_off</span>
@@ -206,7 +210,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { usePage, Link, router } from '@inertiajs/vue3'
 import { cart } from '@/Stores/cart'
 import { route } from 'ziggy-js'
@@ -290,7 +294,93 @@ const logout = () => {
 onMounted(() => {
   fetchProducts()
   fetchCategories()
+    entryTime = Date.now();
+    // logInteraction(0, `view_products_page`);
 })
+
+onBeforeUnmount(() => {
+    sendTrackingData();
+});
+
+function getCsrfToken() {
+    const name = "XSRF-TOKEN=";
+    const decodedCookie = decodeURIComponent(document.cookie);
+    const ca = decodedCookie.split(';');
+    for(let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) == ' ') { c = c.substring(1); }
+        if (c.indexOf(name) == 0) { return c.substring(name.length, c.length); }
+    }
+    return "";
+}
+
+const interactionsBatch = ref([]);
+let entryTime = 0;
+
+function logInteraction(productId, type, payloadData = {}) {
+    if (!authUser.value) return; 
+    interactionsBatch.value.push({
+        product_id: productId, 
+        type: type, 
+        payload: { 
+            ...payloadData, 
+            timestamp: new Date().toISOString() 
+        }
+    });
+}
+
+function sendTrackingData() {
+    if (interactionsBatch.value.length === 0 || !authUser.value) return;
+    
+    const url = '/api/v1/user/interactions';
+    const body = JSON.stringify({ interactions: interactionsBatch.value });
+
+    fetch(url, {
+        method: 'POST',
+        headers: { 
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-XSRF-TOKEN': getCsrfToken()
+        },
+        body: body,
+        keepalive: true,
+        credentials: 'include'
+    }).catch(() => { /* silent fail */ });
+
+    interactionsBatch.value = [];
+}
+
+function formatLabel(text) {
+    if (!text) return 'unknown';
+    
+    if (typeof text === 'object' && text.name) {
+        text = text.name;
+    } else if (typeof text !== 'string') {
+        text = String(text);
+    }
+
+    return text.toLowerCase().replace(/[^a-z0-9]/g, '_');
+}
+
+function trackProductClick(item) {
+    const categoryName = typeof item.category === 'object' ? item.category.name : item.category;
+    
+    logInteraction(item.id, 'click_product_catalog', {
+        category: formatLabel(categoryName || 'unknown')
+    });
+}
+
+function addToCart(item) {
+    cart.add(item);
+    
+    logInteraction(item.id, 'add_to_cart_catalog', {
+        action_source: 'catalog_grid'
+    });
+}
+
+function selectCategory(cat) {
+    activeCategory.value = cat;
+}
 
 // Computed: filter by category and search
 const filteredItems = computed(() => {
@@ -304,11 +394,6 @@ const filteredItems = computed(() => {
   })
 })
 
-// Add to cart
-function addToCart(item) {
-  cart.add(item)
-  console.log('Added to cart:', item.name)
-}
 </script>
 
 <style>

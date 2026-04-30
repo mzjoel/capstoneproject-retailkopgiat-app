@@ -253,6 +253,13 @@ import { cart } from '@/Stores/cart'
 import { route } from 'ziggy-js'
 // import axios from 'axios'
 
+const props = defineProps({
+  product: { type: Object, required: true }
+})
+const page = usePage()
+
+
+
 const logout = () => {
   router.post(route('logout'))
 }
@@ -275,11 +282,9 @@ const bottomNav = computed(() => [
   { label: 'Profil', icon: 'person', url: '#', active: false },
 ])
 
-const props = defineProps({
-  product: { type: Object, required: true }
-})
 
-const page = usePage()
+
+
 // User
 const authUser = computed(() => page.props.auth.user)
 const displayName = computed(() => {
@@ -355,25 +360,27 @@ function getCsrfToken() {
     return "";
 }
 
+function formatLabel(text) {
+    return text.toLowerCase().replace(/[^a-z0-9]/g, '_');
+}
+
 // --- UI METHODS ---
 function goBack() { window.history.back() }
 
 function selectSpiceLevel(level) {
     selectedSpice.value = level;
-    logInteraction('feature_interaction', { feature_type: 'spice_level', value: level });
+    logInteraction(`variansi_rasa_${formatLabel(level)}`);
 }
 
 function addToCart() {
     cart.add(props.product);
-    logInteraction('add_to_cart', { spice: selectedSpice.value });
+    const safeLevel = formatLabel(selectedSpice.value);
+    logInteraction(`add_to_cart_detail_${safeLevel}`);
 }
 
 function toggleFavorite() {
     isFavorite.value = !isFavorite.value;
-    logInteraction('feature_interaction', { 
-        feature_type: 'favorite', 
-        status: isFavorite.value ? 'added' : 'removed' 
-    });
+    logInteraction(`is_favorited_${isFavorite.value ? 'true' : 'false'}`);
 }
 
 // --- LIFECYCLE ---
