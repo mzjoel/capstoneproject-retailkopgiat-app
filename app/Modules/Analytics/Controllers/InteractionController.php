@@ -56,47 +56,49 @@ class InteractionController extends Controller{
         }
     }
 
-     public function getPersonalizedRecommendations(Request $request)
+    public function getPersonalizedRecommendations(Request $request)
     {
         try {
             $user = $request->user();
-            $products = $this->interactionService->getHybridRecommendations($user);
-
+            $recommendations = $this->analyticService->fallbackRecommendations($user);
             return response()->json([
                 'result' => ['status' => 'Success 200', 'message' => 'Recommendations generated'],
-                'data' => $products
+                'data' => $recommendations
             ], 200);
+
         } catch (\Exception $e) {
-            return response()->json(['result' => ['status' => 'Error 500', 'message' => $e->getMessage()]], 500);
+            Log::error("Recommendation Error: " . $e->getMessage());
+            return response()->json([
+                'result' => [
+                    'status' => 'Error 500',
+                    'message' => 'Failed to generate recommendations: ' . $e->getMessage()
+                ]
+            ], 500);
         }
     }
 
-    // private function getCurrentWeather()
-    // {
-    //     return Cache::remember('current_weather', 3600, function () {
-    //         // Dalam produksi, gunakan OpenWeather API:
-    //         // $response = Http::get("https://api.openweathermap.org/data/2.5/weather?q=Bandung&appid=".env('OPENWEATHER_KEY'));
-    //         // return ['temp' => $response->json('main.temp') - 273.15, 'condition' => $response->json('weather.0.main')];
+     public function getWeather()
+    {
+        try {
+            $weather = $this->analyticService->getCurrentWeather();
 
-    //         // Mocking untuk pengembangan
-    //         $conditions = ['Cloudy', 'Rain', 'Clear', 'Sunny'];
-    //         return [
-    //             'temp' => rand(24, 33),
-    //             'condition' => $conditions[array_rand($conditions)],
-    //             'location' => 'Kampus Giat'
-    //         ];
-    //     });
-    // }
+            return response()->json([
+                'result' => [
+                    'status' => 'Success 200', 
+                    'message' => 'Weather context retrieved successfully.'
+                ],
+                'data' => $weather
+            ], 200);
 
-    // private function getCurrentWeatherContext()
-    // {
-    //     return Cache::remember('sys_weather_context', 1800, function () {
-    //         // Simulasi/Integrasi API Cuaca
-    //         $mockConditions = ['Sunny', 'Rainy', 'Cloudy', 'Overcast'];
-    //         return [
-    //             'temp' => rand(24, 33),
-    //             'condition' => $mockConditions[array_rand($mockConditions)]
-    //         ];
-    //     });
-    // }
+        } catch (\Exception $e) {
+            Log::error("Get Weather Error: " . $e->getMessage());
+            return response()->json([
+                'result' => [
+                    'status' => 'Error 500',
+                    'message' => 'Failed to retrieve weather context: ' . $e->getMessage()
+                ]
+            ], 500);
+        }
+    }
+
 }
