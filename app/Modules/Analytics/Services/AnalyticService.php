@@ -6,6 +6,8 @@ use App\Modules\Analytics\Models\UserInteraction;
 use App\Modules\Catalog\Models\Product;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Http;
 
 class AnalyticService{
     public function logBatchInteractions(int $customerProfileId, array $interactions)
@@ -40,12 +42,17 @@ class AnalyticService{
             ->toArray();
     }
     
-    public function fallbackRecomendations($user){
+    public function fallbackRecommendations($user){
         $weather = $this->getCurrentWeather();
         $userTaste = $user->customerProfile->preferences['taste'] ?? 'general';
         $query = Product::where('is_available', true)->with('category');
-        $aiRecommendedIds = Redis::get("user_recommendations:{$user->id}");
-        $aiRecommendedIds = $aiRecommendedIds ? json_decode($aiRecommendedIds) : [];
+        try {
+            $aiRecommendedIds = Redis::get("user_recommendations:{$user->id}");
+            $aiRecommendedIds = $aiRecommendedIds ? json_decode($aiRecommendedIds) : [];
+        } catch (\Throwable $e) {
+            Log::warning("Redis tidak tersedia atau gagal mengambil data: " . $e->getMessage());
+            $aiRecommendedIds = [];
+        }
 
         if ($weather['condition'] === 'Rainy' || $weather['temp'] < 25) {
             $query->orderByRaw("CASE WHEN tags LIKE '%warm%' OR tags LIKE '%soup%' THEN 1 ELSE 2 END");
@@ -106,7 +113,7 @@ class AnalyticService{
                     $data = $response->json();
                     return [
                         'temp' => (int) round($data['main']['temp']),
-                        'condition' => $this->mapConditionForML($data['weather'][0]['main']),
+                        'condition' => $this->mapCondition($data['weather'][0]['main']),
                         'location' => $data['name']
                     ];
                 }

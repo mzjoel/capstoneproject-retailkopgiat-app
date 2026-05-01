@@ -192,78 +192,91 @@
       </div>
 
       <!-- Recommendations -->
-      <section class="space-y-6">
+       <section class="space-y-6">
         <div class="flex items-center justify-between">
           <h2 class="text-2xl font-bold text-on-surface">Rekomendasi untuk Kamu</h2>
-        </div>
-        <div v-if="isLoading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div v-for="i in 4" :key="i" class="animate-pulse bg-surface-container-low rounded-xl h-64"></div>
-        </div>
-        <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-8">
-        <div
-          v-for="item in filteredItems"
-          :key="item.id"
-          class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300 group flex flex-col border border-outline-variant/10"
-        >
-          <Link 
-            :href="route('products.detail', item.id)" 
-            class="block flex-grow"
-            @click="trackProductClick(item)"
-          >
-            <!-- Image -->
-            <div class="relative aspect-[4/3] overflow-hidden">
-              <img
-                :src="item.image_url || item.image"
-                :alt="item.name"
-                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-              />
-            </div>
-
-            <!-- Info -->
-            <div class="p-4 md:p-6 flex flex-col">
-              <div class="flex justify-between items-start mb-3 md:mb-4 gap-2">
-                <h3 class="font-bold text-lg md:text-xl text-on-surface leading-tight" style="font-family: 'Manrope', sans-serif;">
-                  {{ item.name }}
-                </h3>
-                <span class="font-bold text-secondary whitespace-nowrap">Rp {{ item.price }}</span>
-              </div>
-              <p class="text-sm text-on-surface-variant mb-6 md:mb-8 line-clamp-2 leading-relaxed">
-                {{ item.description || 'Deskripsi menu lezat ini.' }}
-              </p>
-            </div>
-          </Link>
           
-          <div class="px-4 pb-4 md:px-6 md:pb-6 mt-auto flex gap-2">
-            <button
-              @click="addToCart(item)"
-              class="flex-1 bg-gradient-to-r from-primary to-[#a00000] text-white py-2.5 md:py-3 rounded-xl font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform duration-200 text-sm md:text-base"
-            >
-              <span class="material-symbols-outlined text-lg">add_shopping_cart</span>
-              Tambah
-            </button>
-            <button
-              @click="addToWishlist(item)"
-              :class="[
-                'p-2.5 md:p-3 rounded-xl flex items-center justify-center transition-colors duration-200 active:scale-95 border',
-                wishlistedItems.includes(item.id) 
-                  ? 'bg-surface-container-lowest text-red-500 border-outline-variant/20 hover:bg-red-50'
-                  : 'bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container-high border-outline-variant/20'
-              ]"
-            >
-              <span class="material-symbols-outlined" :style="wishlistedItems.includes(item.id) ? 'font-variation-settings: \'FILL\' 1' : ''">favorite</span>
-            </button>
+          <!-- Indikator Cuaca (Konteks AI) -->
+          <div v-if="weather" class="flex items-center gap-1.5 bg-surface-container-high px-3 py-1.5 rounded-full text-xs font-bold text-primary border border-primary/20 shadow-sm">
+            <span class="material-symbols-outlined text-sm">
+              {{ weather.condition === 'Rainy' ? 'rainy' : (weather.condition === 'Cloudy' || weather.condition === 'Overcast' ? 'cloud' : 'sunny') }}
+            </span>
+            <span>{{ weather.temp }}°C</span>
           </div>
         </div>
-      </div>
-      <div v-if="filteredItems.length === 0" class="text-center py-20">
-        <span class="material-symbols-outlined text-outline text-6xl mb-4 block">search_off</span>
-        <p class="text-on-surface-variant font-medium">Tidak ada menu ditemukan.</p>
-      </div>
+
+        <!-- Loading State -->
+        <div v-if="isRecommendationsLoading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-8">
+          <div v-for="i in 3" :key="i" class="animate-pulse bg-surface-container-low rounded-xl h-80"></div>
+        </div>
+
+        <!-- Product Grid (Membaca dari array 'recommendations') -->
+        <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-8">
+          <div
+            v-for="item in recommendations"
+            :key="item.id"
+            class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300 group flex flex-col border border-outline-variant/10"
+          >
+            <!-- TRACKING: Klik produk dari section rekomendasi -->
+            <Link 
+              :href="route('products.detail', item.id)" 
+              class="block flex-grow"
+              @click="trackProductClick(item)"
+            >
+              <!-- Image -->
+              <div class="relative aspect-[4/3] overflow-hidden">
+                <img
+                  :src="item.image_url || item.image"
+                  :alt="item.name"
+                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+              </div>
+
+              <!-- Info -->
+              <div class="p-4 md:p-6 flex flex-col">
+                <div class="flex justify-between items-start mb-3 md:mb-4 gap-2">
+                  <h3 class="font-bold text-lg md:text-xl text-on-surface leading-tight" style="font-family: 'Manrope', sans-serif;">
+                    {{ item.name }}
+                  </h3>
+                  <span class="font-bold text-secondary whitespace-nowrap">Rp {{ item.price }}</span>
+                </div>
+                <p class="text-sm text-on-surface-variant mb-6 md:mb-8 line-clamp-2 leading-relaxed">
+                  {{ item.description || 'Deskripsi menu lezat ini.' }}
+                </p>
+              </div>
+            </Link>
+            
+            <div class="px-4 pb-4 md:px-6 md:pb-6 mt-auto flex gap-2">
+              <button
+                @click="addToCart(item)"
+                class="flex-1 bg-gradient-to-r from-primary to-[#a00000] text-white py-2.5 md:py-3 rounded-xl font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform duration-200 text-sm md:text-base"
+              >
+                <span class="material-symbols-outlined text-lg">add_shopping_cart</span>
+                Tambah
+              </button>
+              <button
+                @click="addToWishlist(item)"
+                :class="[
+                  'p-2.5 md:p-3 rounded-xl flex items-center justify-center transition-colors duration-200 active:scale-95 border',
+                  wishlistedItems.includes(item.id) 
+                    ? 'bg-surface-container-lowest text-red-500 border-outline-variant/20 hover:bg-red-50'
+                    : 'bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container-high border-outline-variant/20'
+                ]"
+              >
+                <span class="material-symbols-outlined" :style="wishlistedItems.includes(item.id) ? 'font-variation-settings: \'FILL\' 1' : ''">favorite</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div v-if="!isRecommendationsLoading && recommendations.length === 0" class="text-center py-20">
+          <span class="material-symbols-outlined text-outline text-6xl mb-4 block">search_off</span>
+          <p class="text-on-surface-variant font-medium">Belum ada rekomendasi saat ini.</p>
+        </div>
       </section>
 
     </main>
 
-    <!-- BottomNavBar (Mobile Only) -->
     <nav class="md:hidden glass-nav fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 rounded-t-3xl shadow-[0_-8px_24px_rgba(128,0,0,0.04)]">
       <Link
         v-for="navItem in bottomNav"
@@ -291,6 +304,7 @@ import { ref, onMounted, computed, onBeforeUnmount } from 'vue'
 import { usePage, Link, router } from '@inertiajs/vue3'
 import { cart } from '@/Stores/cart'
 import { route } from 'ziggy-js'
+import axios from 'axios'
 
 const page = usePage()
 
@@ -303,6 +317,10 @@ const isLoading = ref(true)
 const isCategoriesLoading = ref(true)
 const showMobileSearch = ref(false)
 const wishlistedItems = ref([])
+const recommendations = ref([])
+const weather = ref()
+const isRecommendationsLoading = ref(true);
+
 
 // User
 const authUser = computed(() => page.props.auth.user)
@@ -374,6 +392,7 @@ onMounted(() => {
   fetchProducts()
   fetchCategories()
   fetchWishlist()
+  fetchRecomendations()
   entryTime = Date.now();
 })
 
@@ -465,6 +484,26 @@ function addToWishlist(item){
   }
   sendTrackingData(); // Instantly track it
 }
+
+async function fetchRecomendations(){
+  try{
+    const response = await axios.get('/api/v1/user/recommendations', {
+      headers: { 'Accept': 'application/json'},
+      withCredentials: true 
+    });
+
+    if(response.data?.result?.status === 'Success 200'){
+      recommendations.value = response.data.data.recommendations;
+      weather.value = response.data.data.weather;
+      logInteraction(0, 'view_recommendation_section');
+    }
+  }catch(error){
+    console.error('Failed to fetch recommendations:', error);
+  }finally{
+    isRecommendationsLoading.value = false;
+  }
+}
+
 
 async function fetchWishlist() {
   if (!authUser.value) return;
