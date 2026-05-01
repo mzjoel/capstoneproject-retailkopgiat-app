@@ -56,6 +56,55 @@ class InteractionController extends Controller{
         }
     }
 
+    public function fetchWishlist(Request $request)
+    {
+        try {
+            $user = $request->user();
+            if (!$user->customerProfile) {
+                return response()->json([
+                    'result' => ['status' => 'Error 404', 'message' => 'User profile not found.']
+                ], 404);
+            }
+            $customerProfileId = $user->customerProfile->id;
+            
+            $wishlistedProductIds = $this->analyticService->getWishlistProducts($customerProfileId);
+            
+            if ($request->query('include_products')) {
+                $products = \App\Modules\Catalog\Models\Product::with('category')->whereIn('id', $wishlistedProductIds)->get();
+                $formattedData = $products->map(function ($product) {
+                    return [
+                        'id' => $product->id,
+                        'name' => $product->name,
+                        'price' => 'Rp ' . number_format($product->price, 0, ',', '.'),
+                        'category' => $product->category->name ?? 'Uncategorized',
+                        'description' => $product->description,
+                        'image' => $product->image ?: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80',
+                        'isFavorite' => true
+                    ];
+                });
+                return response()->json([
+                    'result' => ['status' => 'Success 200', 'message' => 'Wishlist retrieved'],
+                    'data' => $wishlistedProductIds,
+                    'products' => $formattedData
+                ], 200);
+            }
+                
+            return response()->json([
+                'result' => ['status' => 'Success 200', 'message' => 'Wishlist retrieved'],
+                'data' => $wishlistedProductIds
+            ], 200);
+
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("Fetch Wishlist Error: " . $e->getMessage());
+            return response()->json([
+                'result' => [
+                    'status' => 'Error 500',
+                    'message' => 'Failed to fetch wishlist: ' . $e->getMessage()
+                ]
+            ], 500);
+        }
+    }
+
     public function getPersonalizedRecommendations(Request $request)
     {
         try {

@@ -23,6 +23,8 @@ Route::get('/products', function () {
     return Inertia::render('Catalog/Products');
 })->middleware(['auth', 'verified'])->name('products');
 
+Route::get('/products/wishlist', [ProductController::class, 'showWishlist'] )->middleware(['auth', 'verified'])->name('product.wishlist');
+
 Route::get('/cart', function () {
     return Inertia::render('Transaction/Cart');
 })->middleware(['auth', 'verified'])->name('cart');
@@ -41,6 +43,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+Route::get('/check', function(){
+    return Inertia::render('Catalog/Favorite');
 });
 
 require __DIR__.'/auth.php';

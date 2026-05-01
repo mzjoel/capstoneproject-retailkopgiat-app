@@ -230,4 +230,8 @@ class ProductController extends Controller
         $product->delete();
         return response()->json(['result' => ['status' => 'Success 200', 'message' => 'Product deleted']], 200);
     }
+
+    public function showWishList(){
+        return Inertia::render('Catalog/Favorite');
+    }
 }

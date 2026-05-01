@@ -26,6 +26,20 @@ class AnalyticService{
         return UserInteraction::insert($preparedLogs);
     }
     
+    public function getWishlistProducts(int $customerProfileId)
+    {
+        $latestInteractions = UserInteraction::where('customer_profile_id', $customerProfileId)
+            ->whereIn('type', ['wishlist', 'unwishlist'])
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->unique('product_id');
+
+        return $latestInteractions->where('type', 'wishlist')
+            ->pluck('product_id')
+            ->values()
+            ->toArray();
+    }
+    
     public function fallbackRecomendations($user){
         $weather = $this->getCurrentWeather();
         $userTaste = $user->customerProfile->preferences['taste'] ?? 'general';

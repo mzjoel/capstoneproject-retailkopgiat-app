@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/user/interactions', [InteractionController::class, 'storeInteraction']);
     Route::get('/user/recommendations', [InteractionController::class, 'getPersonalizedRecommendations']);
+    Route::get('/user/wishlist', [InteractionController::class, 'fetchWishlist']);
 });
 
 Route::get('/analytics/weather', [InteractionController::class, 'getWeather']);
