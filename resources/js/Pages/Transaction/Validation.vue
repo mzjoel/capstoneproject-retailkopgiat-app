@@ -362,26 +362,26 @@ async function handlePayment() {
   isLoading.value = true
   console.log('Initiating checkout for customer profile:', customerProfileId)
 
-  router.post('/api/v1/transactions', {
+  window.axios.post('/api/v1/transactions', {
     customer_profile_id: customerProfileId,
     payment_method: selectedPayment.value,
     items: cart.items.map(item => ({
       product_id: item.id,
       quantity: item.qty
     }))
-  }, {
-    onSuccess: () => {
-      console.log('Checkout successful')
-      cart.items = [] // Clear cart on success
-    },
-    onError: (errors) => {
-      console.error('Checkout failed:', errors)
-      const errorMsg = Object.values(errors)[0] || 'Terjadi kesalahan saat memproses pesanan.'
-      alert('Gagal membuat pesanan: ' + errorMsg)
-    },
-    onFinish: () => {
-      isLoading.value = false
-    }
+  }).then(response => {
+    console.log('Checkout successful')
+    cart.items = [] // Clear cart on success
+    
+    // Get transaction ID from response and navigate to history page
+    const transactionId = response.data.data.transaction_id;
+    router.visit(`/transaction/${transactionId}/history`);
+  }).catch(error => {
+    console.error('Checkout failed:', error)
+    const errorMsg = error.response?.data?.result?.message || 'Terjadi kesalahan saat memproses pesanan.'
+    alert('Gagal membuat pesanan: ' + errorMsg)
+  }).finally(() => {
+    isLoading.value = false
   })
 }
 </script>
