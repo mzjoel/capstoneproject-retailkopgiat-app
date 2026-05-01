@@ -400,16 +400,9 @@ onBeforeUnmount (()=>{
   sendTrackingData();
 });
 
-function getCsrfToken(){
-  const name = "XSRF-TOKEN=";
-  const decodedCookie = decodeURIComponent(document.cookie);
-  const ca = decodedCookie.split(';');
-  for(let i = 0; i < ca.length; i++) {
-    let c = ca[i];
-    while (c.charAt(0) == ' ') { c = c.substring(1); }
-    if (c.indexOf(name) == 0) { return c.substring(name.length, c.length); }
-  }
-  return "";
+function getCsrfToken() {
+  const match = document.cookie.match(new RegExp('(^|;\\s*)XSRF-TOKEN=([^;]*)'));
+  return match ? decodeURIComponent(match[2]) : "";
 }
 
 const interactionsBatch = ref([]);
@@ -436,7 +429,7 @@ function sendTrackingData(){
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-CSRF-TOKEN': getCsrfToken(),
+      'X-XSRF-TOKEN': getCsrfToken(),
     },
     body: body,
     credentials: 'include'
@@ -495,7 +488,7 @@ async function fetchRecomendations(){
     if(response.data?.result?.status === 'Success 200'){
       recommendations.value = response.data.data.recommendations;
       weather.value = response.data.data.weather;
-      logInteraction(0, 'view_recommendation_section');
+      // logInteraction(0, 'view_recommendation_section');
     }
   }catch(error){
     console.error('Failed to fetch recommendations:', error);
