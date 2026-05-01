@@ -7,9 +7,9 @@
 
         <!-- Logo + Desktop Links -->
         <div class="flex items-center gap-6 md:gap-8">
-          <span class="text-lg md:text-xl font-black tracking-tight" style="color: #800000; font-family: 'Manrope', sans-serif;">
+          <Link :href="route('dashboard')" class="text-lg md:text-xl font-black tracking-tight" style="color: #800000; font-family: 'Manrope', sans-serif;">
             Koperasi Giat
-          </span>
+          </Link>
           <div class="hidden md:flex items-center gap-2">
             <Link
               v-for="link in navLinks"
@@ -47,11 +47,11 @@
               >{{ cart.count }}</span>
             </Link>
 
-            <button class="hidden md:block p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-colors active:scale-95">
-              <span class="material-symbols-outlined">notifications</span>
-            </button>
+            <Link :href="route('product.wishlist')" class="hidden md:block p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container-high rounded-full transition-colors active:scale-95">
+              <span class="material-symbols-outlined">favorite</span>
+            </Link>
 
-            <div class="flex items-center group relative cursor-pointer ml-1">
+            <div class="flex items-center group relative cursor-pointer">
               <div class="w-8 h-8 rounded-full overflow-hidden bg-surface-container-high">
                 <img
                   :src="displayAvatar"
@@ -170,13 +170,24 @@
             </div>
           </Link>
           
-          <div class="px-4 pb-4 md:px-6 md:pb-6 mt-auto">
+          <div class="px-4 pb-4 md:px-6 md:pb-6 mt-auto flex gap-2">
             <button
               @click="addToCart(item)"
-              class="w-full bg-gradient-to-r from-primary to-[#a00000] text-white py-2.5 md:py-3 rounded-xl font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform duration-200 text-sm md:text-base"
+              class="flex-1 bg-gradient-to-r from-primary to-[#a00000] text-white py-2.5 md:py-3 rounded-xl font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform duration-200 text-sm md:text-base"
             >
               <span class="material-symbols-outlined text-lg">add_shopping_cart</span>
               Tambah
+            </button>
+            <button
+              @click="addToWishlist(item)"
+              :class="[
+                'p-2.5 md:p-3 rounded-xl flex items-center justify-center transition-colors duration-200 active:scale-95 border',
+                wishlistedItems.includes(item.id) 
+                  ? 'bg-surface-container-lowest text-red-500 border-outline-variant/20 hover:bg-red-50'
+                  : 'bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container-high border-outline-variant/20'
+              ]"
+            >
+              <span class="material-symbols-outlined" :style="wishlistedItems.includes(item.id) ? 'font-variation-settings: \'FILL\' 1' : ''">favorite</span>
             </button>
           </div>
         </div>
@@ -225,6 +236,7 @@ const menuItems = ref([])
 const apiCategories = ref([])
 const isLoading = ref(true)
 const isCategoriesLoading = ref(true)
+const wishlistedItems = ref([])
 
 // User
 const authUser = computed(() => page.props.auth.user)
@@ -294,8 +306,8 @@ const logout = () => {
 onMounted(() => {
   fetchProducts()
   fetchCategories()
-    entryTime = Date.now();
-    // logInteraction(0, `view_products_page`);
+  fetchWishlist()
+  entryTime = Date.now();
 })
 
 onBeforeUnmount(() => {
@@ -373,6 +385,33 @@ function addToCart(item) {
 
 function selectCategory(cat) {
     activeCategory.value = cat;
+}
+
+async function fetchWishlist() {
+  if (!authUser.value) return;
+  try {
+    const response = await window.axios.get('/api/v1/user/wishlist');
+    if (response.data && response.data.data) {
+      wishlistedItems.value = response.data.data;
+    }
+  } catch (error) {
+    console.error('Failed to fetch wishlist:', error);
+  }
+}
+
+function addToWishlist(item){
+  if (wishlistedItems.value.includes(item.id)) {
+    wishlistedItems.value = wishlistedItems.value.filter(id => id !== item.id);
+    logInteraction(item.id, 'unwishlist', {
+      action_source: 'catalog_grid'
+    });
+  } else {
+    wishlistedItems.value.push(item.id);
+    logInteraction(item.id, 'wishlist', {
+      action_source: 'catalog_grid'
+    });
+  }
+  sendTrackingData(); // Instantly track it
 }
 
 // Computed: filter by category and search
