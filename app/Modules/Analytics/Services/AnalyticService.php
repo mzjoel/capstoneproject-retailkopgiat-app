@@ -5,7 +5,7 @@ namespace App\Modules\Analytics\Services;
 use App\Modules\Analytics\Models\UserInteraction;
 use App\Modules\Catalog\Models\Product;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Redis;
+// use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
 
@@ -42,40 +42,32 @@ class AnalyticService{
             ->toArray();
     }
     
-    public function fallbackRecommendations($user){
+    public function fallbackRecommendations($user)
+    {
         $weather = $this->getCurrentWeather();
         $userTaste = $user->customerProfile->preferences['taste'] ?? 'general';
-        $query = Product::where('is_available', true)->with('category');
-        try {
-            $aiRecommendedIds = Redis::get("user_recommendations:{$user->id}");
-            $aiRecommendedIds = $aiRecommendedIds ? json_decode($aiRecommendedIds) : [];
-        } catch (\Throwable $e) {
-            Log::warning("Redis tidak tersedia atau gagal mengambil data: " . $e->getMessage());
-            $aiRecommendedIds = [];
-        }
 
+        $query = Product::where('is_available', true)->with('category');
+
+        // A. Filter Cuaca (Rule-Based)
         if ($weather['condition'] === 'Rainy' || $weather['temp'] < 25) {
             $query->orderByRaw("CASE WHEN tags LIKE '%warm%' OR tags LIKE '%soup%' THEN 1 ELSE 2 END");
         } elseif ($weather['temp'] > 30) {
             $query->orderByRaw("CASE WHEN tags LIKE '%cold%' OR tags LIKE '%fresh%' THEN 1 ELSE 2 END");
         }
 
+        // B. Filter Selera User (Rule-Based)
         if ($userTaste !== 'general') {
             $query->orderByRaw("CASE WHEN tags LIKE '%$userTaste%' THEN 1 ELSE 2 END");
         }
 
-        if (!empty($aiRecommendedIds)) {
-            $idsOrdered = implode(',', $aiRecommendedIds);
-            $query->orderByRaw("FIELD(id, {$idsOrdered}) DESC");
-        }
-
-        $products = $query->take(6)->get();
+        $products = $query->take(5)->get();
 
         return [
             'context' => [
-                'weather' => $weather, 
+                'weather' => ['condition' => $weather['condition'], 'temp' => $weather['temp']],
                 'user_preference' => $userTaste,
-                'algorithm' => empty($aiRecommendedIds) ? 'Weather-based + Profiling' : 'Hybrid AI + Weather'
+                'algorithm' => 'Weather-based Fallback (Laravel)'
             ],
             'recommendations' => $products->map(function ($product) {
                 return [
@@ -88,18 +80,19 @@ class AnalyticService{
                 ];
             })
         ];
-
     }
 
 
-    public function getCurrentWeather(){
+    public function getCurrentWeather()
+    {
         return Cache::remember('real_weather_context', 1800, function(){
-            try{
+            try {
                 $apiKey = env('OPENWEATHER_API_KEY');
                 $city = env('WEATHER_CITY', 'Bandung');
 
-                if (empty($apiKey)){
-                    Log::info("[WeatherService] OPENWEATHER_API_KEY kosong. Menggunakan Mock Data.");
+                if (empty($apiKey)) {
+                    // Hanya info log biasa, tidak masalah di production
+                    Log::info("[AnalyticService] OPENWEATHER_API_KEY kosong. Menggunakan Mock Data.");
                     return $this->getMockWeather();
                 }
 
@@ -109,20 +102,20 @@ class AnalyticService{
                     'units' => 'metric'
                 ]);
 
-                if ($response->successful()){
+                if ($response->successful()) {
                     $data = $response->json();
                     return [
                         'temp' => (int) round($data['main']['temp']),
-                        'condition' => $this->mapCondition($data['weather'][0]['main']),
+                        'condition' => $this->mapConditionForML($data['weather'][0]['main']),
                         'location' => $data['name']
                     ];
                 }
 
-                Log::warning("[WeatherService] Gagal fetch Weather. Error: " . $response->body());
+                Log::warning("[AnalyticService] Gagal fetch Weather. Error: " . $response->body());
                 return $this->getMockWeather();
 
-            }catch (\Exception $e){
-                Log::error("Error Weather Service : " . $e->getMessage());
+            } catch (\Exception $e) {
+                Log::error("Error Analytic Service (Weather) : " . $e->getMessage());
                 return $this->getMockWeather();
             }
         });
