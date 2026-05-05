@@ -12,7 +12,8 @@ http:
     - name: Content-Type
       value: application/json
     - name: Authorization
-      value: Bearer 1|5TYjHFJeVpnhQHQx4oSapw0kOgRoLNmLLYypS9pa20960231
+      value: 9|k8IxDnR7ah25LbhmFYs94tWgvf5sDcicbhTY5rOmacad5c6f
+      disabled: true
   body:
     type: json
     data: |-
@@ -24,6 +25,9 @@ http:
           }
         ]
       }
+  auth:
+    type: bearer
+    token: 9|k8IxDnR7ah25LbhmFYs94tWgvf5sDcicbhTY5rOmacad5c6f
 
 settings:
   encodeUrl: true

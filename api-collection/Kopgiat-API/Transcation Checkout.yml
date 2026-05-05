@@ -8,7 +8,8 @@ http:
   url: "{{base_url}}/api/v1/transactions"
   headers:
     - name: Authorization
-      value: Bearer 4|d3gLj96PF69xNqZleRKy3IMAqMH9dE2VK8qzvfMjf7637e98
+      value: Bearer 9|k8IxDnR7ah25LbhmFYs94tWgvf5sDcicbhTY5rOmacad5c6f
+      disabled: true
     - name: Accept
       value: application/json
     - name: Content-Type
@@ -30,7 +31,9 @@ http:
           }
         ]
       }
-  auth: inherit
+  auth:
+    type: bearer
+    token: 9|k8IxDnR7ah25LbhmFYs94tWgvf5sDcicbhTY5rOmacad5c6f
 
 settings:
   encodeUrl: true
