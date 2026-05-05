@@ -11,30 +11,33 @@ log_message() {
 
 log_message "Strating Deployment..."
 
-if [ -d "$APP_DIR"]; then
-    log_message "App Directory is found in $APP_DIR"
+if [ -d "$APP_DIR" ]; then
     cd "$APP_DIR" || exit 1
+    
+    
+    log_message "🔐 Mengatur Permissions (ubuntu:www-data)..."
+    # Mengembalikan kepemilikan agar Git bisa melakukan pull tanpa error permission
     sudo chown -R ubuntu:www-data .
     sudo chmod -R 775 storage bootstrap/cache
     git config --global --add safe.directory "$APP_DIR"
-    log_message "Syncronize Repository"
+
+    log_message "📥 Syncing GitHub (branch: production)..."
+    # Reset paksa untuk membuang perubahan manual di server dan sinkron dengan origin
     git fetch origin production && git reset --hard origin/production
-    git clean -fd
-    log_message "Make Sure Updated Dependencies"
-    composer install --no-dev --optimize-autoloader --no-interaction --quiet
+    
+    log_message "📦 Build Backend (Composer)..."
+    composer install --no-dev --optimize-autoloader --quiet
+
+    log_message "📦 Build Frontend (NPM)..."
     npm install --quiet && npm run build --quiet
-    log_message "Optimize Laravel"
+
+    log_message "⚙️ Optimasi Laravel (Clear Cache & Migrate)..."
     php artisan optimize:clear --no-interaction
     php artisan migrate --force --no-interaction
-    php artisan migrate db:seed --force --no-interaction 
-    log_message "Clear Cache Laravel"
-    php artisan optimize:clear --no-interaction
-    php artisan config:cache --no-interaction
-    php artisan route:cache --no-interaction
-    php artisan view:cache --no-interaction
-    log_message "Deployment App Has Been Completed"
-else 
-    log_message "FAIL : Directory App Not Found, Please Check Directory On Your Server Is Existing..."
+    
+    log_message "✅ Deployment Source Code Selesai."
+else
+    log_message "❌ GAGAL: Folder aplikasi ($APP_DIR) tidak ditemukan!"
     exit 1
 fi
 
