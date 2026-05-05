@@ -5,7 +5,6 @@ namespace App\Modules\Analytics\Services;
 use App\Modules\Analytics\Models\UserInteraction;
 use App\Modules\Catalog\Models\Product;
 use Illuminate\Support\Facades\Cache;
-// use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
 
@@ -28,8 +27,9 @@ class AnalyticService{
         return UserInteraction::insert($preparedLogs);
     }
     
-    public function getWishlistProducts(int $customerProfileId)
+    public function getWishlistProducts(?int $customerProfileId)
     {
+        if (!$customerProfileId) return [];
         $latestInteractions = UserInteraction::where('customer_profile_id', $customerProfileId)
             ->whereIn('type', ['wishlist', 'unwishlist'])
             ->orderBy('created_at', 'desc')
@@ -41,11 +41,62 @@ class AnalyticService{
             ->values()
             ->toArray();
     }
+
+    public function getSmartRecommendations($user){
+        try{
+            $mlUrl = env('ML_ENGINE_URL', 'http://127.0.0.1:5000');
+            $endpoint = $mlUrl . '/recommend/' . $user->id;
+            $response = Http::timeout(5)->get($endpoint);
+
+            if($response->successful() && $response->json('status') === 'success'){
+                $data = $response->json();
+                $recommendedItems = $data['recommendations'] ?? [];
+
+                if(!empty($recommendedItems)){
+                    $productIds = array_column($recommendedItems, 'id');
+                    $idString = implode(',', $productIds);
+                     $products = Product::where('is_available', true)
+                        ->with('category')
+                        ->whereIn('id', $productIds)
+                        ->orderByRaw("FIELD(id, {$idString})")
+                        ->get();
+
+                    $formattedRecommendations = $products->map(function($product) use ($recommendedItems){
+                        $mlInfo = collect($recommendedItems)->firstWhere('id', $product->id);
+                        return [
+                            'id' => $product->id,
+                            'name' => $product->name,
+                            'price' => (float) $product->price,
+                            'category' => $product->category->name ?? 'Uncategorized',
+                            'tags' => $product->tags,
+                            'image_url' => $product->image_url,
+                            'ai_score' => $mlInfo['score'] ?? 0
+                        ];
+                    });
+
+                    return [
+                        'context' => [
+                            'weather' => ['condition' => $data['context']['weather']],
+                            'user_preference' => $data['context']['user_prefs'],
+                             'algorithm' => 'Hybrid Machine Learning (Python SVD)'
+                        ],
+                        'recommendations' => $formattedRecommendations
+                    ];
+                }
+            }
+
+            throw new \Exception("Response ML tidak valid");
+
+        }catch(\Exception $e){
+            Log::error("Analytic Service (ML Error) : " . $e->getMessage());
+            return $this->fallbackRecommendations($user);
+        }
+    }
     
     public function fallbackRecommendations($user)
     {
         $weather = $this->getCurrentWeather();
-        $userTaste = $user->customerProfile->preferences['taste'] ?? 'general';
+        $userTaste = $user->customerProfile?->preferences['taste'] ?? 'general';
 
         $query = Product::where('is_available', true)->with('category');
 
@@ -106,7 +157,7 @@ class AnalyticService{
                     $data = $response->json();
                     return [
                         'temp' => (int) round($data['main']['temp']),
-                        'condition' => $this->mapConditionForML($data['weather'][0]['main']),
+                        'condition' => $this->mapCondition($data['weather'][0]['main']),
                         'location' => $data['name']
                     ];
                 }
@@ -121,14 +172,13 @@ class AnalyticService{
         });
     }
 
-    private function mapCondition($apiCondition){
+    private function mapCondition($apiCondition)
+    {
         $condition = strtolower($apiCondition);
-
         if (in_array($condition, ['clear'])) return 'Sunny';
         if (in_array($condition, ['clouds'])) return 'Cloudy';
         if (in_array($condition, ['rain', 'drizzle', 'thunderstorm', 'squall'])) return 'Rainy';
         if (in_array($condition, ['snow'])) return 'Snowy';
-
         return 'Overcast';
     }
 

@@ -47,11 +47,11 @@
               >{{ cart.count }}</span>
             </Link>
 
-            <Link :href="route('product.wishlist')" class="hidden md:block p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container-high rounded-full transition-colors active:scale-95">
-              <span class="material-symbols-outlined">favorite</span>
-            </Link>
+            <button class="hidden md:block p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-colors active:scale-95">
+              <span class="material-symbols-outlined">notifications</span>
+            </button>
 
-            <div class="flex items-center group relative cursor-pointer">
+            <div class="flex items-center group relative cursor-pointer ml-1">
               <div class="w-8 h-8 rounded-full overflow-hidden bg-surface-container-high">
                 <img
                   :src="displayAvatar"
@@ -251,7 +251,7 @@ const displayAvatar = computed(() => {
 const navLinks = [
   { label: 'Beranda', url: route('dashboard'), active: false },
   { label: 'Menu', url: route('products'), active: true },
-  { label: 'Pesanan', url: '#', active: false },
+  { label: 'Pesanan', url: route('transaction.history'), active: false },
 ]
 
 // Categories

@@ -6,9 +6,9 @@
 
         <!-- Logo + Desktop Links -->
         <div class="flex items-center gap-6 md:gap-8">
-          <span class="text-lg md:text-xl font-black tracking-tight" style="color: #800000; font-family: 'Manrope', sans-serif;">
+          <Link :href="route('dashboard')" class="text-lg md:text-xl font-black tracking-tight" style="color: #800000; font-family: 'Manrope', sans-serif;">
             Koperasi Giat
-          </span>
+          </Link>
           <div class="hidden md:flex items-center gap-2">
             <Link
               v-for="link in navLinks"
@@ -46,11 +46,11 @@
               >{{ cart.count }}</span>
             </Link>
 
-            <button class="hidden md:block p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-colors active:scale-95">
-              <span class="material-symbols-outlined">notifications</span>
-            </button>
+            <Link :href="route('product.wishlist')" class="hidden md:block p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container-high rounded-full transition-colors active:scale-95">
+              <span class="material-symbols-outlined">favorite</span>
+            </Link>
 
-            <div class="flex items-center group relative cursor-pointer ml-1">
+            <div class="flex items-center group relative cursor-pointer">
               <div class="w-8 h-8 rounded-full overflow-hidden bg-surface-container-high">
                 <img
                   :src="displayAvatar"
@@ -266,8 +266,12 @@
 import { ref, computed, onMounted } from 'vue'
 import { usePage, Link, router } from '@inertiajs/vue3'
 import { cart } from '@/Stores/cart'
+import { route } from 'ziggy-js'
+
 
 const page = usePage()
+const searchQuery = ref('')
+const showMobileSearch = ref(false)
 
 // User
 const authUser = computed(() => page.props.auth.user)
@@ -360,7 +364,7 @@ async function handlePayment() {
   }
 
   isLoading.value = true
-  console.log('Initiating checkout for customer profile:', customerProfileId)
+  // console.log('Initiating checkout for customer profile:', customerProfileId)
 
   window.axios.post('/api/v1/transactions', {
     customer_profile_id: customerProfileId,
@@ -370,7 +374,7 @@ async function handlePayment() {
       quantity: item.qty
     }))
   }).then(response => {
-    console.log('Checkout successful')
+    // console.log('Checkout successful')
     cart.items = [] // Clear cart on success
     
     // Get transaction ID from response and navigate to history page

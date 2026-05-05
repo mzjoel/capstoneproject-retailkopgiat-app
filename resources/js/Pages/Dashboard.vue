@@ -172,7 +172,7 @@
       </section>
 
       <!-- Categories -->
-      <div v-if="isCategoriesLoading" class="flex gap-3 mb-10 overflow-x-auto pb-2 no-scrollbar">
+      <!-- <div v-if="isCategoriesLoading" class="flex gap-3 mb-10 overflow-x-auto pb-2 no-scrollbar">
         <div v-for="i in 5" :key="i" class="h-10 w-24 bg-surface-container-high rounded-full animate-pulse"></div>
       </div>
       <div v-else class="flex gap-2 md:gap-3 mb-8 md:mb-10 overflow-x-auto pb-2 no-scrollbar">
@@ -189,7 +189,7 @@
         >
           {{ cat }}
         </button>
-      </div>
+      </div> -->
 
       <!-- Recommendations -->
        <section class="space-y-6">
@@ -335,7 +335,7 @@ const displayAvatar = computed(() => {
 const navLinks = [
   { label: 'Beranda', url: route('dashboard'), active: true },
   { label: 'Menu', url: route('products'), active: false },
-  { label: 'Pesanan', url: '#', active: false },
+  { label: 'Pesanan', url: route('transaction.history'), active: false },
 ]
 
 // Weather banner
@@ -501,7 +501,10 @@ async function fetchRecomendations(){
 async function fetchWishlist() {
   if (!authUser.value) return;
   try {
-    const response = await window.axios.get('/api/v1/user/wishlist');
+    const response = await axios.get('/api/v1/user/wishlist', {
+      headers: { 'Accept': 'application/json' },
+      withCredentials: true
+    });
     if (response.data && response.data.data) {
       wishlistedItems.value = response.data.data;
     }

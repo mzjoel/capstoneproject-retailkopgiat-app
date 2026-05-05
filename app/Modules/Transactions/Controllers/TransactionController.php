@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
+use Inertia\Inertia;
 use Exception;
 
 class TransactionController extends Controller{
@@ -104,9 +105,27 @@ class TransactionController extends Controller{
         }
     }
 
-    public function getTransactionStatus($id){
-        $transaction = Transaction::with('details.product.category')->findOrFail($id);
-        return response()->json(['result' => ['status' => 'Success 200'], 'data' => $transaction]);
+    public function getTransactionStatus(Request $request, $id){
+        try {
+            $transaction = $this->transactionService->getTransactionStatus($id, $request->user());
+
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'result' => ['status' => 'Success 200'],
+                    'data' => $transaction
+                ]);
+            }
+
+            return Inertia::render('Transaction/OrderStatus', [
+                'id' => $id,
+                'rawTransaction' => $transaction
+            ]);
+        } catch (\Exception $e) {
+            return Inertia::render('Transaction/OrderStatus', [
+                'rawTransaction' => null,
+                'errorMessage' => $e->getMessage()
+            ]);
+        }
     }
 
 
@@ -116,6 +135,34 @@ class TransactionController extends Controller{
             return response()->json(['result' => ['status' => 'Success 200', 'message' => 'Status updated']]);
         } catch (\Exception $e) {
             return response()->json(['result' => ['status' => 'Error 400', 'message' => $e->getMessage()]], 400);
+        }
+    }
+
+    public function History(Request $request){
+         try {
+            $user = $request->user();
+            
+            // Mengambil data mentah dari Service (Relasi DB)
+            $transactions = $this->transactionService->getTransactionHistory($user);
+
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'result' => ['status' => 'Success 200'],
+                    'data' => $transactions
+                ]);
+            }
+
+            // Merender halaman Inertia Vue dan passing data sebagai Props
+            return Inertia::render('Transaction/TransactionHistory', [
+                'rawTransactions' => $transactions
+            ]);
+
+        } catch (\Exception $e) {
+            // Fallback jika terjadi error (misal profil belum lengkap)
+            return Inertia::render('Transaction/TransactionHistory', [
+                'rawTransactions' => [],
+                'errorMessage' => $e->getMessage()
+            ]);
         }
     }
 

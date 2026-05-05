@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Modules\Catalog\Controllers\ProductController;
+use App\Modules\Transactions\Controllers\TransactionController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -29,9 +30,15 @@ Route::get('/cart', function () {
     return Inertia::render('Transaction/Cart');
 })->middleware(['auth', 'verified'])->name('cart');
 
-Route::get('/transaction/{id}/history', function ($id) {
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/transaction/history', [TransactionController::class, 'History'])->name('transaction.history');
+});
+
+Route::get('/transaction/{id}/checkout', function ($id) {
     return Inertia::render('Transaction/Checkout', ['id' => $id]);
 })->middleware(['auth', 'verified'])->name('transaction');
+
+Route::get('/transaction/{id}/status', [TransactionController::class, 'getTransactionStatus'])->middleware(['auth', 'verified'])->name('transaction.status');
 
 Route::get('/transaction/validation', function () {
     return Inertia::render('Transaction/Validation');

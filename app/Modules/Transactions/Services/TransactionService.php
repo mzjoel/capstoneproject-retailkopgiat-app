@@ -83,4 +83,31 @@ class TransactionService{
         return $transaction;
     }
 
+    
+    public function getTransactionHistory($user){
+        if(!$user->customerProfile){
+            throw new Exception("Profil customer tidak ditemukan.");
+        }
+        $customer = $user->customerProfile;
+        $transactions = Transaction::where('customer_profile_id', $customer->id)
+            ->with(['details.product'])
+            ->latest()
+            ->get();
+        return $transactions;
+    }
+
+    public function getTransactionStatus($id, $user)
+    {
+        // PENTING: Validasi agar User A tidak bisa melihat pesanan User B
+        if (!$user->customerProfile) {
+            throw new Exception("Profil customer tidak ditemukan.");
+        }
+
+        // Ambil transaksi beserta relasi detail, produk, dan kategorinya
+        return Transaction::with('details.product.category')
+            ->where('id', $id)
+            ->where('customer_profile_id', $user->customerProfile->id)
+            ->firstOrFail();
+    }
+
 }

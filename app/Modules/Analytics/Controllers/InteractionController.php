@@ -33,8 +33,11 @@ class InteractionController extends Controller{
             $user = $request->user();
             if (!$user->customerProfile) {
                 return response()->json([
-                    'result' => ['status' => 'Error 404', 'message' => 'User profile not found. Please complete registration.']
-                ], 404);
+                    'result' => [
+                        'status' => 'Success 200',
+                        'message' => 'Tracking skipped: User profile not found.'
+                    ]
+                ], 200);
             }
             $customerProfileId = $user->customerProfile->id;
             $this->analyticService->logBatchInteractions($customerProfileId, $request->interactions);
@@ -56,14 +59,39 @@ class InteractionController extends Controller{
         }
     }
 
+    public function getPersonalizedRecommendations(Request $request){
+        try{
+            $user = $request->user();
+            $recommendations = $this->analyticService->getSmartRecommendations($user);
+
+            return response()->json([
+                'result' => [
+                    'status' => 'Success 200',
+                    'message' => 'Recommendations generated successfully.'
+                ],
+                'data' => $recommendations
+            ], 200);
+
+        }catch(\Exception $e){
+            Log::error("Recommendation Error: " . $e->getMessage());
+            return response()->json([
+                'result' => [
+                    'status' => 'Error 500',
+                    'message' => 'Failed to generate recommendations: ' . $e->getMessage()
+                ]
+            ], 500);
+        }
+    }    
+
     public function fetchWishlist(Request $request)
     {
         try {
             $user = $request->user();
-            if (!$user->customerProfile) {
+            if (!$user || !$user->customerProfile) {
                 return response()->json([
-                    'result' => ['status' => 'Error 404', 'message' => 'User profile not found.']
-                ], 404);
+                    'result' => ['status' => 'Success 200', 'message' => 'User profile not found, returning empty wishlist.'],
+                    'data' => []
+                ], 200);
             }
             $customerProfileId = $user->customerProfile->id;
             
@@ -100,27 +128,6 @@ class InteractionController extends Controller{
                 'result' => [
                     'status' => 'Error 500',
                     'message' => 'Failed to fetch wishlist: ' . $e->getMessage()
-                ]
-            ], 500);
-        }
-    }
-
-    public function getPersonalizedRecommendations(Request $request)
-    {
-        try {
-            $user = $request->user();
-            $recommendations = $this->analyticService->fallbackRecommendations($user);
-            return response()->json([
-                'result' => ['status' => 'Success 200', 'message' => 'Recommendations generated'],
-                'data' => $recommendations
-            ], 200);
-
-        } catch (\Exception $e) {
-            Log::error("Recommendation Error: " . $e->getMessage());
-            return response()->json([
-                'result' => [
-                    'status' => 'Error 500',
-                    'message' => 'Failed to generate recommendations: ' . $e->getMessage()
                 ]
             ], 500);
         }

@@ -4,6 +4,7 @@ namespace App\Modules\Analytics\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Route;
+use App\Modules\Analytics\Console\Commands\CheckIntegrationML;
 
 class AnalyticServiceProvider extends ServiceProvider
 {
@@ -14,6 +15,16 @@ class AnalyticServiceProvider extends ServiceProvider
             Route::prefix('api/v1')
                 ->middleware('api')
                 ->group($path);
+        }
+
+        if (file_exists($webPath = app_path('Modules/Analytics/Routes/web.php'))) {
+            Route::middleware('web')->group($webPath);
+        }
+
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                CheckIntegrationML::class,
+            ]);
         }
     }
 }
