@@ -389,19 +389,29 @@ async function handlePayment() {
         window.snap.pay(tokenString, {
           onSuccess: function() {
             cart.items = []; 
-            router.visit(`/transaction/${transactionData.transaction_id}/status`);
+            window.location.href = `/transaction/${transactionData.transaction_id}/status`;
+            // router.visit(`/transaction/${transactionData.transaction_id}/status`);
           },
           onPending: function() {
             cart.items = [];
-            router.visit(`/transaction/${transactionData.transaction_id}/status`);
+            window.location.href = `/transaction/${transactionData.transaction_id}/status`;
           },
           onError: function(/** @type {{ status_message: any; }} */ result) {
             alert("Pembayaran Gagal: " + (result.status_message || 'Terjadi kesalahan'));
             isLoading.value = false;
+            window.location.reload(); 
           },
-          onClose: function() {
-            alert('Anda menutup popup pembayaran sebelum selesai.');
+          onClose: async function() {
+            alert('Kamu menutup popup pembayaran. Pesanan Dibatalkan');
+            try{
+              await window.axios.post(`/api/v1/transactions/${transactionData.transaction_id}/status`, {
+                status: 'cancelled'
+              });
+            } catch (error) {
+              console.error('Failed to update transaction status:', error);
+            } 
             isLoading.value = false;
+            router.visit(route('dashboard'));
           }
         });
       } else {
