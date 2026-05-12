@@ -13,4 +13,8 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::patch('/transactions/{id}/status', [TransactionController::class, 'updateStatus']);
 });
 
+    Route::post('/transactions/midtrans', [TransactionController::class, 'midtransCallback'])->name('transaction.payment_midtrans');
+
+
+
     

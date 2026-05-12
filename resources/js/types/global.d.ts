@@ -12,5 +12,6 @@ declare module '@inertiajs/core' {
 declare global {
     interface Window {
         axios: typeof axios;
+        snap: any;
     }
 }

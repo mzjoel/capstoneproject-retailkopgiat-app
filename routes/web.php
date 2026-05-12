@@ -52,8 +52,5 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::get('/check', function(){
-    return Inertia::render('Catalog/Favorite');
-});
 
 require __DIR__.'/auth.php';
