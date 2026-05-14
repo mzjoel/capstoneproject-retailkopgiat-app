@@ -47,6 +47,10 @@ Route::get('/transaction/validation', function () {
     return Inertia::render('Transaction/Validation');
 })->middleware(['auth', 'verified'])->name('validation');
 
+Route::get('/transaction/history', function () {
+    return Inertia::render('Transaction/TransactionHistory');
+})->middleware(['auth', 'verified'])->name('transaction.history');
+
 Route::get('/products/{id}', [ProductController::class, 'showProductPage'])->middleware(['auth', 'verified'])->name('products.detail');
 
 Route::middleware('auth')->group(function () {
