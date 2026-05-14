@@ -15,6 +15,14 @@ Route::get('/', function () {
     ]);
 });
 
+Route::get('/onboarding1', function () {
+    return Inertia::render('Onboarding/Onboarding1');
+})->name('onboarding1');
+
+Route::get('/onboarding2', function () {
+    return Inertia::render('Onboarding/Onboarding2');
+})->name('onboarding2');
+
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
@@ -22,6 +30,10 @@ Route::get('/dashboard', function () {
 Route::get('/products', function () {
     return Inertia::render('Catalog/Products');
 })->middleware(['auth', 'verified'])->name('products');
+
+Route::get('/wishlist', function () {
+    return Inertia::render('Catalog/Wishlist');
+})->middleware(['auth', 'verified'])->name('wishlist');
 
 Route::get('/cart', function () {
     return Inertia::render('Transaction/Cart');
