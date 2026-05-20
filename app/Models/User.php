@@ -39,4 +39,9 @@ class User extends Authenticatable
     {
         return $this->hasOne(CustomerProfile::class);
     }
+
+    public function getNameAttribute(): string
+    {
+        return $this->adminProfile?->name ?? 'Admin Koperasi';
+    }
 }

@@ -32,13 +32,7 @@ Route::get('/products', function () {
     return Inertia::render('Catalog/Products');
 })->middleware(['auth', 'verified'])->name('products');
 
-<<<<<<< HEAD
-Route::get('/wishlist', function () {
-    return Inertia::render('Catalog/Wishlist');
-})->middleware(['auth', 'verified'])->name('wishlist');
-=======
 Route::get('/products/wishlist', [ProductController::class, 'showWishlist'] )->middleware(['auth', 'verified'])->name('product.wishlist');
->>>>>>> 799a8c75711e33e53b8463059e885b90cd8d0ed8
 
 Route::get('/cart', function () {
     return Inertia::render('Transaction/Cart');
