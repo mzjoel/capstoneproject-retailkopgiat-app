@@ -6,7 +6,19 @@
       <div class="w-full max-w-5xl grid md:grid-cols-2 gap-12 items-center">
 
         <!-- Left: Branding Panel -->
-        <BrandingPanel />
+        <div class="hidden md:flex flex-col space-y-8">
+          <div class="space-y-4">
+            <span class="text-primary-container font-headline font-extrabold text-4xl tracking-tight branding">
+              Self Service System
+            </span>
+            <h1 class="text-5xl font-headline font-bold leading-tight text-primary">
+              GIAT <span>Express</span>
+            </h1>
+            <p class="text-on-surface-variant text-lg max-w-md font-body">
+              Elevating your dining experience with curated flavors and scholarly sophistication.
+            </p>
+          </div>
+        </div>
 
         <!-- Right: Login Form Card -->
         <div class="bg-surface-container-lowest p-8 md:p-12 rounded-[2rem] shadow-sm border border-outline-variant/10">
@@ -92,9 +104,9 @@
           <div class="mt-12 text-center">
             <p class="text-on-surface-variant font-body text-sm">
               Sudah punya akun?
-              <a href="route('login')" class="text-primary font-bold ml-1 hover:underline underline-offset-4">
+              <Link :href="route('login')" class="text-primary font-bold ml-1 hover:underline underline-offset-4">
                 Login Disini
-              </a>
+              </Link>
             </p>
           </div>
 
@@ -102,16 +114,14 @@
       </div>
     </main>
 
-    <!-- Footer -->
-    <AppFooter />
   </div>
 </template>
 
 <script setup>
-import { Head, useForm } from '@inertiajs/vue3'
-import BrandingPanel from './Components/BrandingPanel.vue'
+import { Head, Link, useForm } from '@inertiajs/vue3'
 import AuthInput from './Components/AuthInput.vue'
-import AppFooter from './Components/AppFooter.vue'
+import { route } from 'ziggy-js'
+
 
 const form = useForm({
   name: '',
@@ -121,7 +131,7 @@ const form = useForm({
 })
 
 function submit() {
-  form.post(route('register'), {
+  form.post(route('register.store.data'), {
     onFinish: () => form.reset('password', 'password_confirmation'),
   })
 }

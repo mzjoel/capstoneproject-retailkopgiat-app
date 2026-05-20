@@ -96,7 +96,7 @@
     </nav>
 
     <!-- Main Content -->
-    <main class="max-w-7xl mx-auto px-4 md:px-6 py-8 md:py-12">
+    <main class="max-w-7xl mx-auto px-4 md:px-6 py-[6rem] md:py-[6rem]">
 
       <!-- Back Button -->
       <div class="mb-6 md:mb-8">
@@ -129,23 +129,6 @@
               </span>
             </div>
           </div>
-
-          <!-- Thumbnail Gallery -->
-          <!-- <div class="mt-4 md:mt-6 flex gap-3 md:gap-4">
-            <div
-              v-for="(thumb, i) in product.thumbnails"
-              :key="i"
-              @click="selectedThumb = i"
-              :class="[
-                'w-20 h-20 md:w-24 md:h-24 rounded-xl md:rounded-2xl overflow-hidden cursor-pointer border-2 transition-all',
-                selectedThumb === i
-                  ? 'border-primary shadow-md'
-                  : 'border-transparent bg-surface-container-low hover:border-outline-variant/40'
-              ]"
-            >
-              <img :src="thumb" :alt="`Detail ${i + 1}`" class="w-full h-full object-cover" />
-            </div>
-          </div> -->
         </div>
 
         <!-- Right: Product Info (sticky on desktop) -->
@@ -192,18 +175,18 @@
             </div>
 
             <!-- Spice Level Selector -->
-            <div class="space-y-3 md:space-y-4">
+            <div class="space-y-3">
               <label class="text-sm font-bold text-primary block">Tingkat Kepedasan</label>
-              <div class="flex gap-2 md:gap-3">
+              <div class="flex gap-2">
                 <button
-                  v-for="level in spiceLevels"
+                  v-for="level in ['Sedang', 'Pedas', 'Extra']"
                   :key="level"
-                  @click="selectedSpice = level"
+                  @click="selectSpiceLevel(level)"
                   :class="[
-                    'flex-1 py-2.5 md:py-3 rounded-xl font-bold text-[10px] md:text-xs uppercase tracking-widest border-2 transition-all',
+                    'flex-1 py-2.5 rounded-xl font-bold text-[10px] uppercase border-2 transition-all',
                     selectedSpice === level
-                      ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20'
-                      : 'bg-surface-container-high text-on-surface-variant border-transparent hover:border-primary/20'
+                      ? 'bg-primary text-white border-primary shadow-lg'
+                      : 'bg-surface-container-high text-on-surface-variant border-transparent'
                   ]"
                 >
                   {{ level }}
@@ -241,48 +224,6 @@
         </div>
       </div>
 
-      <!-- Paired Recommendations -->
-      <!-- <section class="mt-16 md:mt-24 pt-12 md:pt-20 border-t border-outline-variant/10">
-        <div class="flex justify-between items-end mb-8 md:mb-12">
-          <div>
-            <h2 class="text-2xl md:text-3xl font-extrabold text-primary mb-1 md:mb-2" style="font-family: 'Manrope', sans-serif;">
-              Pasangan Sempurna
-            </h2>
-            <p class="text-on-surface-variant text-sm md:text-base">Sering dipesan bersama {{ product.name }}</p>
-          </div>
-          <button class="text-primary font-bold text-xs md:text-sm underline decoration-2 underline-offset-4 whitespace-nowrap ml-4">
-            Lihat Semua
-          </button>
-        </div>
-
-        <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
-          <div
-            v-for="rec in recommendations"
-            :key="rec.name"
-            class="group cursor-pointer"
-          >
-            <div class="relative aspect-[3/4] rounded-2xl md:rounded-3xl overflow-hidden mb-3 md:mb-6 bg-surface-container-lowest transition-all group-hover:shadow-[0_12px_32px_rgba(128,0,0,0.08)]">
-              <img
-                :src="rec.image"
-                :alt="rec.name"
-                class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-              />
-              <button
-                @click="addRecommendationToCart(rec)"
-                class="absolute bottom-3 right-3 md:bottom-4 md:right-4 bg-primary text-white p-1.5 md:p-2 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all"
-              >
-                <span class="material-symbols-outlined text-base md:text-lg">add</span>
-              </button>
-            </div>
-            <h3 class="text-sm md:text-lg font-bold text-primary group-hover:text-primary-container transition-colors leading-tight" style="font-family: 'Manrope', sans-serif;">
-              {{ rec.name }}
-            </h3>
-            <p class="text-on-surface-variant text-xs md:text-sm mb-1 md:mb-2 mt-0.5">{{ rec.category }}</p>
-            <p class="text-on-surface font-bold text-sm md:text-base">{{ rec.price }}</p>
-          </div>
-        </div>
-      </section> -->
-
     </main>
 
     <!-- Bottom Nav (Mobile Only) -->
@@ -306,26 +247,43 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { usePage, Link, router } from '@inertiajs/vue3'
 import { cart } from '@/Stores/cart'
+import { route } from 'ziggy-js'
+// import axios from 'axios'
 
-// Props
 const props = defineProps({
-  product: {
-    type: Object,
-    required: true
-  }
+  product: { type: Object, required: true }
 })
-
 const page = usePage()
 
-// State
+
+
+const logout = () => {
+  router.post(route('logout'))
+}
+
+
 const searchQuery = ref('')
 const showMobileSearch = ref(false)
-const selectedThumb = ref(0)
-const selectedSpice = ref('Pedas')
-const isFavorite = ref(false)
+
+
+const navLinks = [
+  { label: 'Beranda', url: route('dashboard'), active: true },
+  { label: 'Menu', url: route('products'), active: false },
+  { label: 'Pesanan', url: '#', active: false },
+]
+
+const bottomNav = computed(() => [
+  { label: 'Beranda', icon: 'home', url: route('dashboard'), active: true },
+  { label: 'Menu', icon: 'restaurant_menu', url: route('products'), active: false },
+  { label: 'Cart', icon: 'shopping_cart', url: route('cart'), active: false, badge: cart.count > 0 ? cart.count : null },
+  { label: 'Profil', icon: 'person', url: '#', active: false },
+])
+
+
+
 
 // User
 const authUser = computed(() => page.props.auth.user)
@@ -336,83 +294,100 @@ const displayAvatar = computed(() => {
   return `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName.value)}&color=7F9CF5&background=EBF4FF`
 })
 
-// Nav links
-const navLinks = [
-  { label: 'Menu', url: route('products'), active: true },
-  { label: 'Pesanan', url: '#', active: false },
-  { label: 'Keranjang', url: '#', active: false },
-  { label: 'Profil', url: '#', active: false }
-]
+// --- STATE UI ---
+const selectedSpice = ref('Pedas')
+const isFavorite = ref(false)
 
-// Spice levels
-const spiceLevels = ['Sedang', 'Pedas', 'Extra']
+// --- TRACKING LOGIC ---
+const interactionsBatch = ref([]);
+let entryTime = 0;
 
-// Recommendations (Mocked for now)
-const recommendations = ref([
-  {
-    name: 'Teh Tarik Hangat',
-    category: 'Minuman',
-    price: 'Rp 8.000',
-    image: 'https://images.unsplash.com/photo-1594631252845-29fc4586c55c?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    name: 'Sate Ayam Madura',
-    category: 'Snack',
-    price: 'Rp 15.000',
-    image: 'https://images.unsplash.com/photo-1529692236671-f1f6398a76a1?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    name: 'Pisang Goreng Keju',
-    category: 'Snack',
-    price: 'Rp 12.000',
-    image: 'https://images.unsplash.com/photo-1590005354167-6da97870c747?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    name: 'Es Jeruk Peras',
-    category: 'Minuman',
-    price: 'Rp 7.000',
-    image: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=800&q=80',
-  },
-])
+function logInteraction(type, payloadData = {}) {
+    // console.log(`[Tracking] Mencoba mencatat: ${type}`, payloadData);
+    
+    if (!authUser.value) {
+        // console.warn("[Tracking] Gagal catat: User tidak terdeteksi login");
+        return; 
+    }
 
-// Bottom nav (mobile)
-const bottomNav = [
-  { icon: 'home', label: 'Home', url: route('dashboard'), active: false },
-  { icon: 'restaurant_menu', label: 'Menu', url: route('products'), active: true },
-  { icon: 'shopping_bag', label: 'Cart', url: route('cart'), active: false },
-  { icon: 'person', label: 'Profile', url: '#', active: false },
-]
+    interactionsBatch.value.push({
+        product_id: props.product.id,
+        type: type,
+        payload: { ...payloadData, timestamp: new Date().toISOString() }
+    });
+    
+    //console.log(`[Tracking] Batch size sekarang: ${interactionsBatch.value.length}`);
+}
 
-// Methods
-function goBack() {
-  window.history.back()
+function sendTrackingData() {
+    if (interactionsBatch.value.length === 0 || !authUser.value) return
+    
+    const url = '/api/v1/user/interactions';
+    const body = JSON.stringify({ interactions: interactionsBatch.value });
+
+    fetch(url, {
+        method: 'POST',
+        headers: { 
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-XSRF-TOKEN': getCsrfToken() 
+        },
+        body: body,
+        keepalive: true, 
+        credentials: 'include'
+    }).catch(error => {
+        console.error('[Tracking Error]:', {
+            status: error.response?.status,
+            message: error.response?.data?.result?.message || error.message,
+            payload: interactionsBatch.value
+        });
+    });
+
+    // Kosongkan batch segera setelah instruksi kirim diberikan
+    interactionsBatch.value = [];
+}
+
+
+function getCsrfToken() {
+    const match = document.cookie.match(new RegExp('(^|;\\s*)XSRF-TOKEN=([^;]*)'));
+    return match ? decodeURIComponent(match[2]) : "";
+}
+
+function formatLabel(text) {
+    return text.toLowerCase().replace(/[^a-z0-9]/g, '_');
+}
+
+// --- UI METHODS ---
+function goBack() { window.history.back() }
+
+function selectSpiceLevel(level) {
+    selectedSpice.value = level;
+    logInteraction(`variansi_rasa_${formatLabel(level)}`);
 }
 
 function addToCart() {
-  cart.add(props.product)
-  console.log(`Added: ${props.product.name} | Spice: ${selectedSpice.value}`)
-}
-
-function addRecommendationToCart(rec) {
-  // Map recommendation to product structure expected by cart
-  const productRec = {
-    id: Math.random(), // Unique ID for mock rec
-    name: rec.name,
-    price: parseInt(rec.price.replace(/[^\d]/g, '')),
-    image: rec.image,
-    category: rec.category
-  }
-  cart.add(productRec)
-  console.log('Added recommendation:', rec.name)
-}
-
-function logout() {
-  router.post(route('logout'))
+    cart.add(props.product);
+    const safeLevel = formatLabel(selectedSpice.value);
+    logInteraction(`add_to_cart_detail_${safeLevel}`);
 }
 
 function toggleFavorite() {
-  isFavorite.value = !isFavorite.value
+    isFavorite.value = !isFavorite.value;
+    logInteraction(`is_favorited_${isFavorite.value ? 'true' : 'false'}`);
 }
+
+// --- LIFECYCLE ---
+onMounted(() => {
+    entryTime = Date.now()
+    logInteraction('view', { url: window.location.href })
+})
+
+
+onBeforeUnmount(() => {
+    const dwellTime = Math.round((Date.now() - entryTime) / 1000)
+    logInteraction('dwell_time', { duration: dwellTime })
+    sendTrackingData()
+})
 </script>
 
 <style>

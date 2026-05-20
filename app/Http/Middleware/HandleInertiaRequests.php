@@ -34,6 +34,7 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user() ? $request->user()->load('customerProfile', 'adminProfile') : null,
             ],
+            'midtrans_client_key' => config('midtrans.client_key')
         ];
     }
 }

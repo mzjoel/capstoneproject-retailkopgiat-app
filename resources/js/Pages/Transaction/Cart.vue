@@ -2,7 +2,7 @@
   <div class="bg-surface text-on-surface min-h-screen">
 
     <!-- TopNavBar -->
-    <nav class="fixed top-0 w-full z-50 glass-nav">
+   <nav class="fixed top-0 w-full z-50 glass-nav">
       <div class="flex justify-between items-center px-4 md:px-6 py-3 md:py-4 w-full max-w-7xl mx-auto">
 
         <!-- Logo + Desktop Links -->
@@ -47,9 +47,9 @@
               >{{ cart.count }}</span>
             </Link>
 
-            <button class="hidden md:block p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-colors active:scale-95">
-              <span class="material-symbols-outlined">notifications</span>
-            </button>
+            <Link :href="route('product.wishlist')" class="hidden md:block p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container-high rounded-full transition-colors active:scale-95">
+              <span class="material-symbols-outlined">favorite</span>
+            </Link>
 
             <div class="flex items-center group relative cursor-pointer">
               <div class="w-8 h-8 rounded-full overflow-hidden bg-surface-container-high">
@@ -254,8 +254,11 @@
 import { ref, computed } from 'vue'
 import { usePage, Link } from '@inertiajs/vue3'
 import { cart } from '@/Stores/cart'
+import { route } from 'ziggy-js'
 
 const page = usePage()
+const searchQuery = ref('')
+const showMobileSearch = ref(false)
 
 // User
 const authUser = computed(() => page.props.auth.user)

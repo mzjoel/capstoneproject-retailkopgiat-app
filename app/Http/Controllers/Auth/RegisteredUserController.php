@@ -27,36 +27,91 @@ class RegisteredUserController extends Controller
     }
 
     /**
+     * Validation Session Preferences
+     */
+    
+    public function storeRegisterData(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+        ]);
+        $request->session()->put('register_data', $validated);
+        return redirect()->route('register.preferences');
+    }
+
+    public function showPreferences(): Response|RedirectResponse
+    {
+        if(!session()->has('register_data')){
+            return redirect()->route('register');
+        }
+        return Inertia::render('Auth/Register/Preferences');
+    }
+
+    public function storePreferences(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'tastes' => 'required|array|min:1',
+        ]);
+
+        $data = $request->session()->get('register_data');
+        $data['tastes'] = $validated['tastes'];
+        $request->session()->put('register_data', $data);
+        return redirect()->route('register.preferences.level');
+    }
+
+    public function showPreferencesLevel(): Response|RedirectResponse
+    {
+        if(!session()->has('register_data')){
+            return redirect()->route('register');
+        }
+        $data = session()->get('register_data');
+        return Inertia::render('Auth/Register/PreferencesLevel', [
+            'tastes' => $data['tastes'] ?? []
+        ]);
+    } 
+    
+
+    /**
      * Handle an incoming registration request.
      *
      * @throws ValidationException
      */
     public function store(Request $request): RedirectResponse
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'preferences'=> 'sometimes|array',
-            'preferences.taste' => 'sometimes|string|in:sweet,spicy,savory,bitter'
+        $validated = $request->validate([
+            'level' => 'required|array|min:1',
         ]);
+        $data = $request->session()->get('register_data');
 
-        $user = DB::transaction(function () use ($request) {
+        if(!$data){
+            return redirect()->route('register');
+        }
+
+        $preferences = [
+            'tastes' => $data['tastes'] ?? [],
+            'levels' => $validated['level'] ?? [],
+        ];
+
+        $user = DB::transaction(function () use ($data, $preferences){
             $user = User::create([
-                'email' => $request->email,
-                'password' => Hash::make($request->password),
-                'role_id' => 2, 
+                'email' => $data['email'],
+                'password' => Hash::make($data['password']),
+                'role_id' => 2,
             ]);
 
             CustomerProfile::create([
                 'user_id' => $user->id,
-                'name' => $request->name,
-                'preferences' => $request->preferences ?? ['taste' => 'sweet'],
+                'name' => $data['name'],
+                'preferences' => $preferences,
             ]);
 
             return $user;
         });
 
+
+        $request->session()->forget('register_data');
         event(new Registered($user));
 
         Auth::login($user);

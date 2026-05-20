@@ -47,9 +47,9 @@
               >{{ cart.count }}</span>
             </Link>
 
-            <button class="hidden md:block p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-colors active:scale-95">
-              <span class="material-symbols-outlined">notifications</span>
-            </button>
+            <Link :href="route('product.wishlist')" class="hidden md:block p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container-high rounded-full transition-colors active:scale-95">
+              <span class="material-symbols-outlined">favorite</span>
+            </Link>
 
             <div class="flex items-center group relative cursor-pointer">
               <div class="w-8 h-8 rounded-full overflow-hidden bg-surface-container-high">
@@ -172,80 +172,111 @@
       </section>
 
       <!-- Categories -->
-      <!-- <section class="space-y-6">
-        <div class="flex items-center justify-between">
-          <h2 class="text-2xl font-bold text-on-surface">Kategori</h2>
-          <button class="text-primary font-bold text-sm">Lihat Semua</button>
-        </div>
-        <div class="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
-          <button
-            v-for="cat in categories"
-            :key="cat"
-            @click="activeCategory = cat"
-            :class="[
-              'px-8 py-3 rounded-full font-bold whitespace-nowrap transition-colors',
-              activeCategory === cat
-                ? 'bg-primary text-on-primary scale-105 shadow-lg'
-                : 'bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest'
-            ]"
-          >
-            {{ cat }}
-          </button>
-        </div>
-      </section> -->
+      <!-- <div v-if="isCategoriesLoading" class="flex gap-3 mb-10 overflow-x-auto pb-2 no-scrollbar">
+        <div v-for="i in 5" :key="i" class="h-10 w-24 bg-surface-container-high rounded-full animate-pulse"></div>
+      </div>
+      <div v-else class="flex gap-2 md:gap-3 mb-8 md:mb-10 overflow-x-auto pb-2 no-scrollbar">
+        <button
+          v-for="cat in categories"
+          :key="cat"
+          @click="selectCategory(cat)"
+          :class="[
+            'px-5 md:px-6 py-2 md:py-2.5 rounded-full font-semibold whitespace-nowrap text-sm transition-all duration-200',
+            activeCategory === cat
+              ? 'bg-primary text-on-primary scale-105 shadow-md'
+              : 'bg-surface-container-high text-on-surface-variant hover:opacity-80'
+          ]"
+        >
+          {{ cat }}
+        </button>
+      </div> -->
 
       <!-- Recommendations -->
-      <section class="space-y-6">
+       <section class="space-y-6">
         <div class="flex items-center justify-between">
           <h2 class="text-2xl font-bold text-on-surface">Rekomendasi untuk Kamu</h2>
+          
+          <!-- Indikator Cuaca (Konteks AI) -->
+          <div v-if="weather" class="flex items-center gap-1.5 bg-surface-container-high px-3 py-1.5 rounded-full text-xs font-bold text-primary border border-primary/20 shadow-sm">
+            <span class="material-symbols-outlined text-sm">
+              {{ weather.condition === 'Rainy' ? 'rainy' : (weather.condition === 'Cloudy' || weather.condition === 'Overcast' ? 'cloud' : 'sunny') }}
+            </span>
+            <span>{{ weather.temp }}°C</span>
+          </div>
         </div>
-        <div v-if="isLoading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div v-for="i in 4" :key="i" class="animate-pulse bg-surface-container-low rounded-xl h-64"></div>
+
+        <!-- Loading State -->
+        <div v-if="isRecommendationsLoading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-8">
+          <div v-for="i in 3" :key="i" class="animate-pulse bg-surface-container-low rounded-xl h-80"></div>
         </div>
-        <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+
+        <!-- Product Grid (Membaca dari array 'recommendations') -->
+        <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-8">
           <div
-            v-for="item in menuItems"
+            v-for="item in recommendations"
             :key="item.id"
-            class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-[0_12px_32px_rgba(128,0,0,0.06)] group hover:-translate-y-1 transition-all duration-300"
+            class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300 group flex flex-col border border-outline-variant/10"
           >
-            <div class="h-40 overflow-hidden">
-              <img
-                :src="item.image"
-                :alt="item.name"
-                class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-              />
-            </div>
-            <div class="p-6 space-y-4">
-              <div class="flex justify-between items-start">
-                <h3 class="font-bold text-lg leading-tight">{{ item.name }}</h3>
-                <span class="bg-surface-container-low p-1 rounded-full">
-                  <span
-                    class="material-symbols-outlined text-sm text-primary"
-                    style="font-variation-settings: 'FILL' 1"
-                  >star</span>
-                </span>
+            <!-- TRACKING: Klik produk dari section rekomendasi -->
+            <Link 
+              :href="route('products.detail', item.id)" 
+              class="block flex-grow"
+              @click="trackProductClick(item)"
+            >
+              <!-- Image -->
+              <div class="relative aspect-[4/3] overflow-hidden">
+                <img
+                  :src="item.image_url || item.image"
+                  :alt="item.name"
+                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
               </div>
-              <div class="flex items-center gap-2 text-on-surface-variant text-sm">
-                <span class="material-symbols-outlined text-sm">category</span>
-                <span>{{ item.category.name }}</span>
+
+              <!-- Info -->
+              <div class="p-4 md:p-6 flex flex-col">
+                <div class="flex justify-between items-start mb-3 md:mb-4 gap-2">
+                  <h3 class="font-bold text-lg md:text-xl text-on-surface leading-tight" style="font-family: 'Manrope', sans-serif;">
+                    {{ item.name }}
+                  </h3>
+                  <span class="font-bold text-secondary whitespace-nowrap">Rp {{ item.price }}</span>
+                </div>
+                <p class="text-sm text-on-surface-variant mb-6 md:mb-8 line-clamp-2 leading-relaxed">
+                  {{ item.description || 'Deskripsi menu lezat ini.' }}
+                </p>
               </div>
-              <div class="flex justify-between items-center pt-2">
-                <span class="text-primary font-bold text-xl">{{ item.formattedPrice }}</span>
-                <button
-                  @click="addToCart(item)"
-                  class="p-2 bg-surface-container-low rounded-full text-primary hover:bg-primary hover:text-white transition-colors"
-                >
-                  <span class="material-symbols-outlined">add</span>
-                </button>
-              </div>
+            </Link>
+            
+            <div class="px-4 pb-4 md:px-6 md:pb-6 mt-auto flex gap-2">
+              <button
+                @click="addToCart(item)"
+                class="flex-1 bg-gradient-to-r from-primary to-[#a00000] text-white py-2.5 md:py-3 rounded-xl font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform duration-200 text-sm md:text-base"
+              >
+                <span class="material-symbols-outlined text-lg">add_shopping_cart</span>
+                Tambah
+              </button>
+              <button
+                @click="addToWishlist(item)"
+                :class="[
+                  'p-2.5 md:p-3 rounded-xl flex items-center justify-center transition-colors duration-200 active:scale-95 border',
+                  wishlistedItems.includes(item.id) 
+                    ? 'bg-surface-container-lowest text-red-500 border-outline-variant/20 hover:bg-red-50'
+                    : 'bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container-high border-outline-variant/20'
+                ]"
+              >
+                <span class="material-symbols-outlined" :style="wishlistedItems.includes(item.id) ? 'font-variation-settings: \'FILL\' 1' : ''">favorite</span>
+              </button>
             </div>
           </div>
+        </div>
+
+        <div v-if="!isRecommendationsLoading && recommendations.length === 0" class="text-center py-20">
+          <span class="material-symbols-outlined text-outline text-6xl mb-4 block">search_off</span>
+          <p class="text-on-surface-variant font-medium">Belum ada rekomendasi saat ini.</p>
         </div>
       </section>
 
     </main>
 
-    <!-- BottomNavBar (Mobile Only) -->
     <nav class="md:hidden glass-nav fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 rounded-t-3xl shadow-[0_-8px_24px_rgba(128,0,0,0.04)]">
       <Link
         v-for="navItem in bottomNav"
@@ -269,18 +300,27 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, onBeforeUnmount } from 'vue'
 import { usePage, Link, router } from '@inertiajs/vue3'
 import { cart } from '@/Stores/cart'
+import { route } from 'ziggy-js'
+import axios from 'axios'
 
 const page = usePage()
 
 // State
 const searchQuery = ref('')
-const activeCategory = ref('Semua')
+const activeCategory = ref('Semua Menu')
 const menuItems = ref([])
+const apiCategories = ref([])
 const isLoading = ref(true)
+const isCategoriesLoading = ref(true)
 const showMobileSearch = ref(false)
+const wishlistedItems = ref([])
+const recommendations = ref([])
+const weather = ref()
+const isRecommendationsLoading = ref(true);
+
 
 // User
 const authUser = computed(() => page.props.auth.user)
@@ -295,7 +335,7 @@ const displayAvatar = computed(() => {
 const navLinks = [
   { label: 'Beranda', url: route('dashboard'), active: true },
   { label: 'Menu', url: route('products'), active: false },
-  { label: 'Pesanan', url: '#', active: false },
+  { label: 'Pesanan', url: route('transaction.history'), active: false },
 ]
 
 // Weather banner
@@ -312,22 +352,22 @@ const bestseller = {
 }
 
 // Categories
-const categories = ['Semua', 'Minuman', 'Makanan Berat', 'Camilan', 'Pastry', 'Sehat']
+const categories = computed(() => ['Semua Menu', ...apiCategories.value.map(c => c.name)])
 
 // Methods
 const fetchProducts = async () => {
   try {
     isLoading.value = true
     const response = await window.axios.get('/api/v1/products')
-    // Ambil maksimal 4 data
-    menuItems.value = response.data.data.slice(0, 4).map(item => ({
+    menuItems.value = response.data.data.map(item => ({
       ...item,
       image: item.image || `https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80`,
       formattedPrice: new Intl.NumberFormat('id-ID', {
         style: 'currency',
         currency: 'IDR',
         minimumFractionDigits: 0
-      }).format(item.price)
+      }).format(item.price),
+      description: item.description || item.ingredients || 'Nikmati kesegaran menu pilihan kami yang dibuat dengan bahan berkualitas.'
     }))
   } catch (error) {
     console.error('Failed to fetch products:', error)
@@ -336,8 +376,156 @@ const fetchProducts = async () => {
   }
 }
 
+const fetchCategories = async () => {
+  try {
+    isCategoriesLoading.value = true
+    const response = await window.axios.get('/api/v1/categories')
+    apiCategories.value = response.data.data
+  } catch (error) {
+    console.error('Failed to fetch categories:', error)
+  } finally {
+    isCategoriesLoading.value = false
+  }
+}
+
 onMounted(() => {
   fetchProducts()
+  fetchCategories()
+  fetchWishlist()
+  fetchRecomendations()
+  entryTime = Date.now();
+})
+
+onBeforeUnmount (()=>{
+  sendTrackingData();
+});
+
+function getCsrfToken() {
+  const match = document.cookie.match(new RegExp('(^|;\\s*)XSRF-TOKEN=([^;]*)'));
+  return match ? decodeURIComponent(match[2]) : "";
+}
+
+const interactionsBatch = ref([]);
+let entryTime = 0;
+
+function logInteraction(productId, type, payloadData = {}){
+  if(!authUser.value) return;
+  interactionsBatch.value.push({
+    product_id: productId,
+    type: type,
+    payload: {
+      ...payloadData,
+      timestamp: new Date().toISOString()
+    }
+  });
+}
+
+function sendTrackingData(){
+  if(interactionsBatch.value.length === 0 || !authUser.value) return;
+
+  const url = '/api/v1/user/interactions';
+  const body = JSON.stringify({ interactions: interactionsBatch.value});
+  fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-XSRF-TOKEN': getCsrfToken(),
+    },
+    body: body,
+    credentials: 'include'
+  }).catch(err => {
+    console.error('Failed to send tracking data:', err);
+  });
+  interactionsBatch.value = [];
+}
+
+function formatLabel(text){
+  if(!text) return 'unknown';
+  if (typeof text === 'object' && text.name) {
+    text = text.name;
+  } else if (typeof text !== 'string') {
+    text = String(text);
+  }
+  return text.toLowerCase().replace(/[^a-z0-9]/g, '_');
+}
+
+function trackProductClick(item){
+  const categoryName = typeof item.category === 'object' ? item.category.name : item.category;
+  logInteraction(item.id, 'click_product_catalog', {
+        category: formatLabel(categoryName || 'unknown')
+    });
+}
+
+function addToCart(item){
+  cart.add(item);
+  logInteraction(item.id, 'add_to_cart_catalog', {
+    action_source: 'catalog_grid'
+  })
+}
+
+function addToWishlist(item){
+  if (wishlistedItems.value.includes(item.id)) {
+    wishlistedItems.value = wishlistedItems.value.filter(id => id !== item.id);
+    logInteraction(item.id, 'unwishlist', {
+      action_source: 'dashboard_grid'
+    });
+  } else {
+    wishlistedItems.value.push(item.id);
+    logInteraction(item.id, 'wishlist', {
+      action_source: 'dashboard_grid'
+    });
+  }
+  sendTrackingData(); // Instantly track it
+}
+
+async function fetchRecomendations(){
+  try{
+    const response = await axios.get('/api/v1/user/recommendations', {
+      headers: { 'Accept': 'application/json'},
+      withCredentials: true 
+    });
+
+    if(response.data?.result?.status === 'Success 200'){
+      recommendations.value = response.data.data.recommendations;
+      weather.value = response.data.data.weather;
+      // logInteraction(0, 'view_recommendation_section');
+    }
+  }catch(error){
+    console.error('Failed to fetch recommendations:', error);
+  }finally{
+    isRecommendationsLoading.value = false;
+  }
+}
+
+
+async function fetchWishlist() {
+  if (!authUser.value) return;
+  try {
+    const response = await axios.get('/api/v1/user/wishlist', {
+      headers: { 'Accept': 'application/json' },
+      withCredentials: true
+    });
+    if (response.data && response.data.data) {
+      wishlistedItems.value = response.data.data;
+    }
+  } catch (error) {
+    console.error('Failed to fetch wishlist:', error);
+  }
+}
+
+function selectCategory(cat) {
+    activeCategory.value = cat;
+}
+
+const filteredItems = computed(() => {
+  return menuItems.value.filter(item => {
+    const matchCategory =
+      activeCategory.value === 'Semua Menu' || item.category.name === activeCategory.value
+    const matchSearch =
+      !searchQuery.value ||
+      item.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+    return matchCategory && matchSearch
+  })
 })
 
 // Bottom nav
@@ -353,10 +541,6 @@ const logout = () => {
   router.post(route('logout'))
 }
 
-function addToCart(item) {
-  cart.add(item)
-  console.log('Added to cart:', item.name)
-}
 </script>
 
 <style>

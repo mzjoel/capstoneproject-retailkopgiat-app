@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
+use Inertia\Inertia;
 use Exception;
 
 class TransactionController extends Controller{
@@ -53,60 +54,94 @@ class TransactionController extends Controller{
     
     public function checkout(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        try{
+
+            $validator = Validator::make($request->all(), [
             'customer_profile_id' => 'required|exists:customer_profiles,id',
             'payment_method' => 'required|in:qris,cash',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|integer|min:1',
-        ]);
+            ]);
 
-        if ($validator->fails()) {
-            return response()->json(['result' => ['status' => 'Error 422', 'message' => $validator->errors()->first()]], 422);
-        }
-
-        try{
-            $transaction = $this->transactionService->createTransaction($request->all());
-            
-            $paymentUrl = null;
-            // if ($transaction->payment_method === 'qris') {
-            //     $paymentUrl = "https://app.sandbox.midtrans.com/snap/v2/vtweb/" . bin2hex(random_bytes(8));
-            // }
-
-            if ($request->header('X-Inertia')) {
-                return redirect()->route('transaction', ['id' => $transaction->id]);
+            if ($validator->fails()) {
+                return response()->json(['result' => ['status' => 'Error 422', 'message' => $validator->errors()->first()]], 422);
             }
 
+            $transaction = $this->transactionService->createTransaction($request->all());
+            
+            $responseData = [
+                "transaction_id" => $transaction->id,
+                "order_id"       => $transaction->order_id,
+                "grand_total"    => $transaction->grand_total,
+                "status"         => $transaction->status,
+            ];
+
+            if($request->payment_method==='qris'){
+                $responseData['midtrans'] = 'pending';
+                $responseData['snap_token'] = $transaction->snap_token;
+            }
             return response()->json([
                 'result' => ['status' => 'Success 201', 'message' => 'Order created'],
-                'data' => [
-                    'transaction_id' => $transaction->id,
-                    'order_id' => $transaction->order_id,
-                    'payment_method' => $transaction->payment_method,
-                    'grand_total' => $transaction->grand_total,
-                    'items' => $transaction->items,
-                    
-                    // 'payment_url' => $paymentUrl
-                ]
+                'data' => $responseData,
             ], 201);
-        }catch(Exception $e){
-            \Log::error('Checkout error: ' . $e->getMessage(), [
-                'file' => $e->getFile(),
+        }catch(\Throwable $e){
+            Log::channel('midtrans')->error('[CHECKOUT FAILED] Internal/Midtrans Error', [
+                'message' => $e->getMessage(),
                 'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString()
+                'file' => $e->getFile()
             ]);
+            
             return response()->json([
-                'result' => [
-                    'status' => 'Error 500', 
-                    'message' => 'Internal Server Error: ' . $e->getMessage() . ' in ' . basename($e->getFile()) . ':' . $e->getLine()
-                ]
+                'result' => ['status' => 'Error 500', 'message' => $e->getMessage() . ' in ' . $e->getFile() . ' line ' . $e->getLine()]
             ], 500);
         }
     }
 
-    public function getTransactionStatus($id){
-        $transaction = Transaction::with('details.product.category')->findOrFail($id);
-        return response()->json(['result' => ['status' => 'Success 200'], 'data' => $transaction]);
+    public function midtransCallback(Request $request){
+        Log::channel('midtrans')->info('Payload Dari midtrans', $request->all());
+        try{
+            $transaction = $this->transactionService->handleMidtransNotification();
+            Log::channel('midtrans')->info('[WEBHOOK SUCCESS] DB Terupdate', [
+                'order_id' => $transaction ? $transaction->order_id : 'N/A',
+                'new_status' => $transaction ? $transaction->status : 'N/A'
+            ]);
+            return response()->json([
+                'status' => 'Success 200',
+                'message' => 'Notification received and processsed'
+            ]);
+        }catch(\Exception $e){
+            // LOG 3: Gagal update DB (misal order_id tidak ditemukan)
+            Log::channel('midtrans')->error('[WEBHOOK FAILED] Gagal memproses data', [
+                'message' => $e->getMessage(),
+                'payload' => $request->all()
+            ]);
+            // Log::error('Webhook Error: '. $e->getMessage());
+            return response()->json(['error' => 'Failed to process'], 500);
+        }
+    }
+
+    public function getTransactionStatus(Request $request, $id){
+        try {
+            $transaction = $this->transactionService->getTransactionStatus($id, $request->user());
+
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'result' => ['status' => 'Success 200'],
+                    'data' => $transaction
+                ]);
+            }
+
+            return Inertia::render('Transaction/OrderStatus', [
+                'id' => $id,
+                'rawTransaction' => $transaction
+            ]);
+        } catch (\Exception $e) {
+            return Inertia::render('Transaction/OrderStatus', [
+                'rawTransaction' => null,
+                'errorMessage' => $e->getMessage()
+            ]);
+        }
     }
 
 
@@ -119,17 +154,33 @@ class TransactionController extends Controller{
         }
     }
 
-    // public function handleNotification(Request $request){
-    //     $orderId = $request->order_id;
-    //     $transactionStatus = $request->transaction_status;
-    //     $transaction = Transaction::where('order_id', $orderId)->first();
-    //     if ($transaction) {
-    //         if ($transactionStatus == 'settlement' || $transactionStatus == 'capture') {
-    //             $transaction->update(['status' => 'paid']);
-    //         } else if ($transactionStatus == 'expire' || $transactionStatus == 'cancel') {
-    //             $transaction->update(['status' => 'cancelled']);
-    //         }
-    //     }
-    //     return response()->json(['status' => 'OK']);
-    // }
+    public function History(Request $request){
+         try {
+            $user = $request->user();
+            
+            // Mengambil data mentah dari Service (Relasi DB)
+            $transactions = $this->transactionService->getTransactionHistory($user);
+
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'result' => ['status' => 'Success 200'],
+                    'data' => $transactions
+                ]);
+            }
+
+            // Merender halaman Inertia Vue dan passing data sebagai Props
+            return Inertia::render('Transaction/TransactionHistory', [
+                'rawTransactions' => $transactions
+            ]);
+
+        } catch (\Exception $e) {
+            // Fallback jika terjadi error (misal profil belum lengkap)
+            return Inertia::render('Transaction/TransactionHistory', [
+                'rawTransactions' => [],
+                'errorMessage' => $e->getMessage()
+            ]);
+        }
+    }
+
+
 }

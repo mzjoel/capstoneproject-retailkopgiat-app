@@ -10,18 +10,19 @@ use Illuminate\Support\Facades\Log;
 
 class InteractionController extends Controller{
 
-    protected $interactionService;
+    protected $analyticService;
 
-    public function __construct(InteractionService $interactionService)
+    public function __construct(AnalyticService $analyticService)
     {
-        $this->interactionService = $interactionService;
+        $this->analyticService = $analyticService;
     }
 
-    public function storeInteractions(Request $request){
+    public function storeInteraction(Request $request){
         $validator = Validator::make($request->all(), [
             'interactions' => 'required|array|min:1|max:50',
             'interactions.*.product_id' => 'required|exists:products,id',
             'interactions.*.type' => 'required|string',
+            'interactions.*.payload' => 'nullable|array',
         ]);
 
         if ($validator->fails()) {
@@ -29,58 +30,131 @@ class InteractionController extends Controller{
         }
 
         try {
-            $customerProfileId = $request->user()->customerProfile->id;
-            $this->interactionService->logBatchInteractions($customerProfileId, $request->interactions);
+            $user = $request->user();
+            if (!$user->customerProfile) {
+                return response()->json([
+                    'result' => [
+                        'status' => 'Success 200',
+                        'message' => 'Tracking skipped: User profile not found.'
+                    ]
+                ], 200);
+            }
+            $customerProfileId = $user->customerProfile->id;
+            $this->analyticService->logBatchInteractions($customerProfileId, $request->interactions);
 
             return response()->json([
-                'result' => ['status' => 'Success 201', 'message' => 'Interactions logged with context.']
+                'result' => [
+                    'status' => 'Success 201',
+                    'message' => 'Interactions logged with context.'
+                ]
             ], 201);
         } catch (\Exception $e) {
-            return response()->json(['result' => ['status' => 'Error 500', 'message' => $e->getMessage()]], 500);
+            Log::error("Tracking Error: " . $e->getMessage());
+            return response()->json([
+                'result' => [
+                    'status' => 'Error 500',
+                    'message' => $e->getMessage()
+                ]
+            ], 500);
         }
     }
 
-     public function getPersonalizedRecommendations(Request $request)
+    public function getPersonalizedRecommendations(Request $request){
+        try{
+            $user = $request->user();
+            $recommendations = $this->analyticService->getSmartRecommendations($user);
+
+            return response()->json([
+                'result' => [
+                    'status' => 'Success 200',
+                    'message' => 'Recommendations generated successfully.'
+                ],
+                'data' => $recommendations
+            ], 200);
+
+        }catch(\Exception $e){
+            Log::error("Recommendation Error: " . $e->getMessage());
+            return response()->json([
+                'result' => [
+                    'status' => 'Error 500',
+                    'message' => 'Failed to generate recommendations: ' . $e->getMessage()
+                ]
+            ], 500);
+        }
+    }    
+
+    public function fetchWishlist(Request $request)
     {
         try {
             $user = $request->user();
-            $products = $this->interactionService->getHybridRecommendations($user);
-
+            if (!$user || !$user->customerProfile) {
+                return response()->json([
+                    'result' => ['status' => 'Success 200', 'message' => 'User profile not found, returning empty wishlist.'],
+                    'data' => []
+                ], 200);
+            }
+            $customerProfileId = $user->customerProfile->id;
+            
+            $wishlistedProductIds = $this->analyticService->getWishlistProducts($customerProfileId);
+            
+            if ($request->query('include_products')) {
+                $products = \App\Modules\Catalog\Models\Product::with('category')->whereIn('id', $wishlistedProductIds)->get();
+                $formattedData = $products->map(function ($product) {
+                    return [
+                        'id' => $product->id,
+                        'name' => $product->name,
+                        'price' => 'Rp ' . number_format($product->price, 0, ',', '.'),
+                        'category' => $product->category->name ?? 'Uncategorized',
+                        'description' => $product->description,
+                        'image' => $product->image ?: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80',
+                        'isFavorite' => true
+                    ];
+                });
+                return response()->json([
+                    'result' => ['status' => 'Success 200', 'message' => 'Wishlist retrieved'],
+                    'data' => $wishlistedProductIds,
+                    'products' => $formattedData
+                ], 200);
+            }
+                
             return response()->json([
-                'result' => ['status' => 'Success 200', 'message' => 'Recommendations generated'],
-                'data' => $products
+                'result' => ['status' => 'Success 200', 'message' => 'Wishlist retrieved'],
+                'data' => $wishlistedProductIds
             ], 200);
+
         } catch (\Exception $e) {
-            return response()->json(['result' => ['status' => 'Error 500', 'message' => $e->getMessage()]], 500);
+            \Illuminate\Support\Facades\Log::error("Fetch Wishlist Error: " . $e->getMessage());
+            return response()->json([
+                'result' => [
+                    'status' => 'Error 500',
+                    'message' => 'Failed to fetch wishlist: ' . $e->getMessage()
+                ]
+            ], 500);
         }
     }
 
-    // private function getCurrentWeather()
-    // {
-    //     return Cache::remember('current_weather', 3600, function () {
-    //         // Dalam produksi, gunakan OpenWeather API:
-    //         // $response = Http::get("https://api.openweathermap.org/data/2.5/weather?q=Bandung&appid=".env('OPENWEATHER_KEY'));
-    //         // return ['temp' => $response->json('main.temp') - 273.15, 'condition' => $response->json('weather.0.main')];
+     public function getWeather()
+    {
+        try {
+            $weather = $this->analyticService->getCurrentWeather();
 
-    //         // Mocking untuk pengembangan
-    //         $conditions = ['Cloudy', 'Rain', 'Clear', 'Sunny'];
-    //         return [
-    //             'temp' => rand(24, 33),
-    //             'condition' => $conditions[array_rand($conditions)],
-    //             'location' => 'Kampus Giat'
-    //         ];
-    //     });
-    // }
+            return response()->json([
+                'result' => [
+                    'status' => 'Success 200', 
+                    'message' => 'Weather context retrieved successfully.'
+                ],
+                'data' => $weather
+            ], 200);
 
-    // private function getCurrentWeatherContext()
-    // {
-    //     return Cache::remember('sys_weather_context', 1800, function () {
-    //         // Simulasi/Integrasi API Cuaca
-    //         $mockConditions = ['Sunny', 'Rainy', 'Cloudy', 'Overcast'];
-    //         return [
-    //             'temp' => rand(24, 33),
-    //             'condition' => $mockConditions[array_rand($mockConditions)]
-    //         ];
-    //     });
-    // }
+        } catch (\Exception $e) {
+            Log::error("Get Weather Error: " . $e->getMessage());
+            return response()->json([
+                'result' => [
+                    'status' => 'Error 500',
+                    'message' => 'Failed to retrieve weather context: ' . $e->getMessage()
+                ]
+            ], 500);
+        }
+    }
+
 }

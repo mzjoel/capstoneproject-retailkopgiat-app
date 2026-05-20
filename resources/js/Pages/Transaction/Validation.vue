@@ -6,9 +6,9 @@
 
         <!-- Logo + Desktop Links -->
         <div class="flex items-center gap-6 md:gap-8">
-          <span class="text-lg md:text-xl font-black tracking-tight" style="color: #800000; font-family: 'Manrope', sans-serif;">
+          <Link :href="route('dashboard')" class="text-lg md:text-xl font-black tracking-tight" style="color: #800000; font-family: 'Manrope', sans-serif;">
             Koperasi Giat
-          </span>
+          </Link>
           <div class="hidden md:flex items-center gap-2">
             <Link
               v-for="link in navLinks"
@@ -46,11 +46,11 @@
               >{{ cart.count }}</span>
             </Link>
 
-            <button class="hidden md:block p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-colors active:scale-95">
-              <span class="material-symbols-outlined">notifications</span>
-            </button>
+            <Link :href="route('product.wishlist')" class="hidden md:block p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container-high rounded-full transition-colors active:scale-95">
+              <span class="material-symbols-outlined">favorite</span>
+            </Link>
 
-            <div class="flex items-center group relative cursor-pointer ml-1">
+            <div class="flex items-center group relative cursor-pointer">
               <div class="w-8 h-8 rounded-full overflow-hidden bg-surface-container-high">
                 <img
                   :src="displayAvatar"
@@ -266,10 +266,10 @@
 import { ref, computed, onMounted } from 'vue'
 import { usePage, Link, router } from '@inertiajs/vue3'
 import { cart } from '@/Stores/cart'
+import { route } from 'ziggy-js'
 
+//Props & Auth
 const page = usePage()
-
-// User
 const authUser = computed(() => page.props.auth.user)
 const displayName = computed(() => {
   return authUser.value?.customer_profile?.name || authUser.value?.admin_profile?.name || authUser.value?.email || 'User'
@@ -277,6 +277,29 @@ const displayName = computed(() => {
 const displayAvatar = computed(() => {
   return `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName.value)}&color=7F9CF5&background=EBF4FF`
 })
+
+const logout = () => {
+  router.post(route('logout'));
+}
+
+//State
+const searchQuery = ref('')
+const showMobileSearch = ref(false)
+const isLoading = ref(false)
+const selectedPayment = ref('qris')
+const paymentMethods = ref([
+  {value: 'cash', label: 'Tunai', icon: 'payments'},
+  {value: 'qris', label: 'QRIS', icon: 'qr_code_2'}
+])
+
+//Computed
+const subtotal = computed(() => cart.subtotal)
+const total = computed(() => subtotal.value)
+
+// Helpers
+function formatRupiah(amount) {
+  return 'Rp ' + (amount || 0).toLocaleString('id-ID')
+}
 
 // Nav links
 const navLinks = [
@@ -293,22 +316,7 @@ const bottomNav = [
   { icon: 'person', label: 'Profile', url: '#', active: false },
 ]
 
-// Payment methods from API
-const paymentMethods = ref([
-  { value: 'cash', label: 'Tunai', icon: 'payments' },
-])
-const selectedPayment = ref('qris')
 const validationData = ref(null)
-const isLoading = ref(false)
-
-// Computed
-const subtotal = computed(() => cart.subtotal)
-const total = computed(() => subtotal.value)
-
-// Helpers
-function formatRupiah(amount) {
-  return 'Rp ' + (amount || 0).toLocaleString('id-ID')
-}
 
 // Methods
 const validateOrder = async () => {
@@ -347,42 +355,82 @@ onMounted(() => {
 })
 
 async function handlePayment() {
-  if (isLoading.value) return
-  if (cart.items.length === 0) {
-    alert('Keranjang belanja kosong!')
-    return
-  }
+  if (isLoading.value) return;
+  if (cart.items.length === 0) return alert('Keranjang belanja kosong!');
 
-  const customerProfileId = authUser.value?.customer_profile?.id
-  if (!customerProfileId) {
-    alert('Profil pelanggan tidak ditemukan. Pastikan Anda masuk sebagai Pelanggan.')
-    return
-  }
+  const customerProfileId = authUser.value?.customer_profile?.id;
+  if (!customerProfileId) return alert('Profil pelanggan tidak ditemukan.');
 
-  isLoading.value = true
-  console.log('Initiating checkout for customer profile:', customerProfileId)
+  isLoading.value = true;
 
-  router.post('/api/v1/transactions', {
-    customer_profile_id: customerProfileId,
-    payment_method: selectedPayment.value,
-    items: cart.items.map(item => ({
-      product_id: item.id,
-      quantity: item.qty
-    }))
-  }, {
-    onSuccess: () => {
-      console.log('Checkout successful')
-      cart.items = [] // Clear cart on success
-    },
-    onError: (errors) => {
-      console.error('Checkout failed:', errors)
-      const errorMsg = Object.values(errors)[0] || 'Terjadi kesalahan saat memproses pesanan.'
-      alert('Gagal membuat pesanan: ' + errorMsg)
-    },
-    onFinish: () => {
-      isLoading.value = false
+  try {
+    const response = await window.axios.post('/api/v1/transactions', {
+      customer_profile_id: customerProfileId,
+      payment_method: selectedPayment.value,
+      items: cart.items.map(item => ({
+        product_id: item.id,
+        quantity: item.qty,
+        price: item.price
+      }))
+    }, {
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      }
+    });
+
+    const transactionData = response.data.data;
+
+    if (selectedPayment.value === 'qris' && transactionData.snap_token) {
+      const tokenString = String(transactionData.snap_token);
+
+
+      if (typeof window.snap !== 'undefined') {
+        window.snap.pay(tokenString, {
+          onSuccess: function() {
+            cart.items = []; 
+            window.location.href = `/transaction/${transactionData.transaction_id}/status`;
+            // router.visit(`/transaction/${transactionData.transaction_id}/status`);
+          },
+          onPending: function() {
+            cart.items = [];
+            window.location.href = `/transaction/${transactionData.transaction_id}/status`;
+          },
+          onError: function(/** @type {{ status_message: any; }} */ result) {
+            alert("Pembayaran Gagal: " + (result.status_message || 'Terjadi kesalahan'));
+            isLoading.value = false;
+            window.location.reload(); 
+          },
+          onClose: async function() {
+            alert('Kamu menutup popup pembayaran. Pesanan Dibatalkan');
+            try{
+              await window.axios.post(`/api/v1/transactions/${transactionData.transaction_id}/status`, {
+                status: 'cancelled'
+              });
+            } catch (error) {
+              console.error('Failed to update transaction status:', error);
+            } 
+            isLoading.value = false;
+            router.visit(route('dashboard'));
+          }
+        });
+      } else {
+        alert("Gagal memuat sistem pembayaran Midtrans. Silakan refresh halaman.");
+        isLoading.value = false;
+      }
+    } 
+    // JIKA PEMBAYARAN TUNAI (CASH)
+    else {
+      cart.items = [];
+      router.visit(`/transaction/${transactionData.transaction_id}/status`);
     }
-  })
+
+  } catch (error) {
+    console.error('Checkout failed:', error);
+    const errorMsg = error.response?.data?.result?.message || 'Gagal memproses pesanan.';
+    alert(errorMsg);
+    isLoading.value = false;
+  }
 }
 </script>
 

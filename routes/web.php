@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Modules\Catalog\Controllers\ProductController;
+use App\Modules\Transactions\Controllers\TransactionController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -31,17 +32,27 @@ Route::get('/products', function () {
     return Inertia::render('Catalog/Products');
 })->middleware(['auth', 'verified'])->name('products');
 
+<<<<<<< HEAD
 Route::get('/wishlist', function () {
     return Inertia::render('Catalog/Wishlist');
 })->middleware(['auth', 'verified'])->name('wishlist');
+=======
+Route::get('/products/wishlist', [ProductController::class, 'showWishlist'] )->middleware(['auth', 'verified'])->name('product.wishlist');
+>>>>>>> 799a8c75711e33e53b8463059e885b90cd8d0ed8
 
 Route::get('/cart', function () {
     return Inertia::render('Transaction/Cart');
 })->middleware(['auth', 'verified'])->name('cart');
 
-Route::get('/transaction/{id}/history', function ($id) {
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/transaction/history', [TransactionController::class, 'History'])->name('transaction.history');
+});
+
+Route::get('/transaction/{id}/checkout', function ($id) {
     return Inertia::render('Transaction/Checkout', ['id' => $id]);
 })->middleware(['auth', 'verified'])->name('transaction');
+
+Route::get('/transaction/{id}/status', [TransactionController::class, 'getTransactionStatus'])->middleware(['auth', 'verified'])->name('transaction.status');
 
 Route::get('/transaction/validation', function () {
     return Inertia::render('Transaction/Validation');
@@ -58,5 +69,6 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
 
 require __DIR__.'/auth.php';

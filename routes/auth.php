@@ -15,14 +15,22 @@ Route::middleware('guest')->group(function () {
     Route::get('register', [RegisteredUserController::class, 'create'])
         ->name('register');
 
-    Route::post('register', [RegisteredUserController::class, 'store']);
+    Route::post('register/data', [RegisteredUserController::class, 'storeRegisterData'])->name('register.store.data');
+
+    Route::get('register/preferences', [RegisteredUserController::class, 'showPreferences'])->name('register.preferences');
+
+    Route::post('register/preferences', [RegisteredUserController::class, 'storePreferences'])->name('register.store.preferences');
+
+    Route::get('register/preferences/level', [RegisteredUserController::class, 'showPreferencesLevel'])->name('register.preferences.level');
+
+    Route::post('register', [RegisteredUserController::class, 'store'])->name('register.store');
 
     Route::get('login', [AuthenticatedSessionController::class, 'create'])
         ->name('login');
 
     Route::post('login', [AuthenticatedSessionController::class, 'store']);
 
-    Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
+Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
         ->name('password.request');
 
     Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])

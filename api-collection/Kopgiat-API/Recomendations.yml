@@ -1,0 +1,22 @@
+info:
+  name: Recomendations
+  type: http
+  seq: 14
+
+http:
+  method: GET
+  url: "{{base_url}}/api/v1/user/recommendations"
+  headers:
+    - name: Content-Type
+      value: application/json
+    - name: Accept
+      value: application/json
+  auth:
+    type: bearer
+    token: 8|SEoUCgfMZQ4iSvybrfHLqogndHPGpZ7Xdx5aw7n54fe84c16
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
