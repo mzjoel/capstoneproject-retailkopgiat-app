@@ -18,6 +18,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\Filter;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\DatePicker;
+use Filament\Notifications\Notification;
 use Filament\Forms;
 
 class TransactionsTable
@@ -55,10 +56,10 @@ class TransactionsTable
                 TextColumn::make('status')
                     ->badge()
                     ->color(fn (string $state): string => match($state) {
-                        'pending' => 'warning',
+                        'pending' => 'gray',
                         'completed' => 'success',
                         'cancelled' => 'danger',
-                        default => 'gray',
+                        default => 'warning',
                     })
                     ->icon(fn (string $state): string => match($state) {
                         'pending' => 'heroicon-o-clock',
@@ -149,7 +150,7 @@ class TransactionsTable
                 ->modalDescription('Are you sure? Stock will be restored.')
                 ->visible(fn (Transaction $record): bool => $record->status === 'pending')
                 ->action(function (Transaction $record) {
-                    $record->markAsCancelled();
+                    $record->update(['status' => 'cancelled']);
 
                     Notification::make()
                         ->title('Transaction Cancelled')

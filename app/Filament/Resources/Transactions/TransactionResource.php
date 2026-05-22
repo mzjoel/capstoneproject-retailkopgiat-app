@@ -5,7 +5,6 @@ namespace App\Filament\Resources\Transactions;
 use App\Filament\Resources\Transactions\Pages\CreateTransaction;
 use App\Filament\Resources\Transactions\Pages\EditTransaction;
 use App\Filament\Resources\Transactions\Pages\ListTransactions;
-use App\Filament\Resources\Transactions\Pages\ViewTransaction;
 use App\Filament\Resources\Transactions\Schemas\TransactionForm;
 use App\Filament\Resources\Transactions\Tables\TransactionsTable;
 use App\Modules\Transactions\Models\Transaction;
@@ -55,7 +54,6 @@ class TransactionResource extends Resource
         return [
             'index' => ListTransactions::route('/'),
             'create' => CreateTransaction::route('/create'),
-            'view' => ViewTransaction::route('/{record}'),
             'edit' => EditTransaction::route('/{record}/edit'),
         ];
     }

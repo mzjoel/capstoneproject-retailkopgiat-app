@@ -11,6 +11,8 @@ use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Utilities\Set; 
 use Filament\Schemas\Components\Utilities\Get;
 use App\Modules\Catalog\Models\Product;
+use App\Modules\Transactions\Models\Transaction;
+use App\Modules\Transactions\Models\TransactionDetail;
 use App\Modules\Analytics\Models\CustomerProfile;
 
 class TransactionForm
@@ -34,41 +36,50 @@ class TransactionForm
                                     ->searchable()
                                     ->native(false)
                                     ->live()
+                                    ->disabled(fn ( $record) => $record !== null)
+                                    ->dehydrateStateUsing(fn ($state) => empty($state) ? 2 : $state)
                                     ->afterStateUpdated(function ($state, Set $set) {
                                         if ($state) {
                                             $set('order_id', 'GIAT-' . time() . '-' . $state);
                                         } else {
-                                            $set('order_id', 'GIAT-GUEST');
+                                            $set('order_id', 'GIAT-GUEST'.time());
                                         }
                                     })
                                     ->afterStateUpdated(function ($state, Set $set) {
                                         if ($state) {
                                             $set('order_id', 'GIAT-' . time() . '-' . $state);
                                         } else {
-                                            $set('order_id', 'GIAT-GUEST');
+                                            $set('order_id', 'GIAT-GUEST'.time());
                                         }
                                     }),
                                 TextInput::make('order_id')
                                     ->label('ID Pesanan')
-                                    ->default('GIAT-GUEST')
+                                    ->default(fn () => 'GIAT-GUEST'.time())
                                     ->readOnly()
                                     ->dehydrated()
                                     ->required(),
-                                TextInput::make('status')
-                                    ->label('status')
+                                Select::make('status')
+                                    ->label('Status Pesanan')
+                                    ->options([
+                                        'pending'=>'PENDING',
+                                        'processing'=>'PROCESSING',
+                                        'completed'=>'COMPLETED',
+                                        'cancelled'=>'CANCELLED'
+                                    ])
                                     ->default('pending')
-                                    ->readOnly() 
-                                    ->dehydrated(),
+                                    ->required()
+                                    ->native(false)
+                                    ->selectablePlaceholder(false)
+                                    ->disabled(fn ( $record) => $record !== null && $record->status !== 'pending'),
                                 Select::make('payment_method')
                                     ->label('Metode Pembayaran')
                                     ->options([
                                         'cash'=>'CASH',
-                                        'midtrans'=>'QRIS',
+                                        'qris'=>'QRIS',
                                     ])
-                                    ->default('cash')
                                     ->required()
                                     ->native(false)
-                                    ->selectablePlaceholder(false),
+                                    ->disabled(fn ( $record) => $record !== null),
                                 TextInput::make('grand_total')
                                     ->label('Total Pembayaran')
                                     ->numeric()
@@ -76,6 +87,7 @@ class TransactionForm
                                     ->prefix('Rp')
                                     ->columnSpan(2)
                                     ->readOnly() 
+                                    ->disabled(fn ( $record) => $record !== null && $record->status !== 'pending')
                                     ->dehydrated(),
                             ])->columns(2),
 
@@ -93,6 +105,10 @@ class TransactionForm
                                             self::updateTotalAmount($get, $set)
                                         )
                                     )
+                                    ->addable(fn (?Transaction $record) => $record === null)
+                                    ->deletable(fn (?Transaction $record) => $record === null)
+                                    ->cloneable(fn (?Transaction $record) => $record === null)
+                                    ->reorderable(false)
                                     ->schema([
                                         Select::make('product_id')
                                             ->label('Produk')
@@ -108,6 +124,7 @@ class TransactionForm
                                             ->searchable()
                                             ->native(false)
                                             ->live()
+                                            ->disabled(fn ($record) => $record !== null)
                                             ->afterStateUpdated(function($state, Set $set, Get $get){
                                                 if($state){
                                                     $product = Product::find($state);
@@ -128,6 +145,7 @@ class TransactionForm
                                             ->minValue(1)
                                             ->required()
                                             ->live()
+                                            ->disabled(fn ($record) => $record !== null)
                                             ->afterStateUpdated(function ($state, Set $set, Get $get) {
                                                 $price = $get('price_transaction') ?? 0;
                                                 $set('grand_total', $price * ($state ?? 1));
