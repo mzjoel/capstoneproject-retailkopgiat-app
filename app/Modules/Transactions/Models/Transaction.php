@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Modules\Analytics\Models\CustomerProfile;
+use App\Modules\Transactions\Models\TransactionDetail;
 
 class Transaction extends Model
 {
