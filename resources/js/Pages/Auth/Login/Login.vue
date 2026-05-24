@@ -85,8 +85,6 @@
       </div>
     </main>
 
-    <!-- Footer -->
-    <AppFooter />
   </div>
 </template>
 
@@ -94,7 +92,6 @@
 import { Head, Link, useForm } from '@inertiajs/vue3'
 import BrandingPanel from './Components/BrandingPanel.vue'
 import AuthInput from './Components/AuthInput.vue'
-import AppFooter from './Components/AppFooter.vue'
 import { route } from 'ziggy-js'
 
 const form = useForm({

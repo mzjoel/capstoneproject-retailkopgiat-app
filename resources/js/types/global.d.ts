@@ -1,3 +1,5 @@
+/// <reference types="vite/client" />
+
 import '@inertiajs/core';
 import axios from 'axios';
 

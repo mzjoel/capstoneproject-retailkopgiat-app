@@ -1,3 +1,3 @@
 <template>
-    <h1>Retail Koperasi Giat</h1>
+    <h1>GIAT Express</h1>
 </template>
