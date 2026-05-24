@@ -8,7 +8,7 @@
         <!-- Logo + Desktop Links -->
         <div class="flex items-center gap-6 md:gap-8">
           <Link :href="route('dashboard')" class="text-lg md:text-xl font-black tracking-tight" style="color: #800000; font-family: 'Manrope', sans-serif;">
-            Koperasi Giat
+            GIAT Express
           </Link>
           <div class="hidden md:flex items-center gap-2">
             <Link
@@ -273,6 +273,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { usePage, Link, router } from '@inertiajs/vue3'
 import { cart } from '@/Stores/cart'
+import { route } from 'ziggy-js'
 
 const props = defineProps({
   id: String

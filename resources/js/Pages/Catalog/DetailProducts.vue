@@ -8,7 +8,7 @@
         <!-- Logo + Desktop Links -->
         <div class="flex items-center gap-6 md:gap-8">
           <span class="text-lg md:text-xl font-black tracking-tight" style="color: #800000; font-family: 'Manrope', sans-serif;">
-            Koperasi Giat
+            GIAT Express
           </span>
           <div class="hidden md:flex items-center gap-2">
             <Link

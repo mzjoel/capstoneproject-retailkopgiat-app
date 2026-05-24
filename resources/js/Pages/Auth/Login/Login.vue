@@ -16,7 +16,7 @@
             <!-- Mobile branding -->
             <div class="md:hidden mb-6">
               <span class="text-primary-container font-headline font-extrabold text-2xl tracking-tight branding">
-                Koperasi Giat
+                GIAT Express
               </span>
             </div>
             <h2 class="text-3xl font-headline font-bold text-on-surface mb-2">Selamat Datang</h2>

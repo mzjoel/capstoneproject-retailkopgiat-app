@@ -18,6 +18,7 @@ use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Filament\View\PanelsRenderHook;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -28,6 +29,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->brandName('GIAT Express')
             ->colors([
                 'primary' => Color::Amber,
             ])
@@ -54,6 +56,15 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ]);
+            ])
+            ->renderHook(
+                PanelsRenderHook::HEAD_START,
+                fn (): string => '
+                    <link rel="manifest" href="/build/manifest.webmanifest">
+                    <meta name="theme-color" content="#800000">
+                    <link rel="apple-touch-icon" href="/assets/icons/logoipsum-424.png">
+                    <link rel="icon" type="image/png" href="/assets/icons/logoipsum-424.png">
+                ',
+            );
     }
 }
