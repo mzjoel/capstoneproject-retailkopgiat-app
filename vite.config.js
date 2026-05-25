@@ -21,7 +21,7 @@ export default defineConfig({
         VitePWA({
             registerType: 'autoUpdate',
             outDir: 'public',
-            buildBase: '/',
+            buildBase: '/build/',
             scope: '/',
             manifest: {
                 name: 'GIAT Express',
@@ -48,10 +48,21 @@ export default defineConfig({
             workbox: {
                 runtimeCaching: [
                     {
+                        urlPattern: ({ request }) => request.mode === 'navigate',
+                        handler: 'NetworkFirst', 
+                        options: {
+                            cacheName: 'laravel-dynamic-pages',
+                            expiration: {
+                                maxEntries: 50,
+                                maxAgeSeconds: 60 * 60 * 24 * 7, 
+                            },
+                        },
+                    },
+                    {
                         urlPattern: ({ request }) => request.headers.get('X-Inertia') === 'true',
                         handler: 'NetworkFirst',
                         options: {
-                            cacheName: 'inertia-pages-cache',
+                            cacheName: 'inertia-json-cache',
                             expiration: {
                                 maxEntries: 50,
                                 maxAgeSeconds: 60 * 60 * 24 * 7,
@@ -59,7 +70,7 @@ export default defineConfig({
                         },
                     }
                 ],
-                navigateFallback: '/',
+                cleanupOutdatedCaches: true,
                 globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg}']
             },
             devOptions: {
