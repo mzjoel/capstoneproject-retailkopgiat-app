@@ -30,6 +30,9 @@ if [ -d "$APP_DIR" ]; then
     php artisan optimize:clear --no-interaction
     php artisan migrate --force --no-interaction
     php artisan db:seed --class=AdminSeeder --force --no-interaction
+    php artisan config:clear
+    php artisan route:clear
+    php artisan view:clear
     
     log_message "✅ Source Code Deployment Completed."
 else
