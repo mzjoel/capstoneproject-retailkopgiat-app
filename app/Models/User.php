@@ -20,7 +20,7 @@ use Filament\Panel;
 
 #[Fillable(['name', 'email', 'password'])]
 #[Hidden(['password', 'remember_token'])]
-class User extends Authenticatable
+class User extends Authenticatable implements FilamentUser
 {
     use Notifiable, HasApiTokens, HasFactory;
 
@@ -49,6 +49,6 @@ class User extends Authenticatable
 
     public function canAccessPanel(Panel $panel): bool
     {
-        return $this->role->name === 'Admin';
+        return $this->role?->name === 'Admin';
     }
 }
