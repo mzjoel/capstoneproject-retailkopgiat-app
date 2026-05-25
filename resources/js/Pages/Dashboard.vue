@@ -1,14 +1,12 @@
 <template>
   <div class="bg-background text-on-surface min-h-screen pb-24 md:pb-0">
 
-    <!-- Top Navigation Bar -->
     <nav class="fixed top-0 w-full z-50 glass-nav">
       <div class="flex justify-between items-center px-4 md:px-6 py-3 md:py-4 w-full max-w-7xl mx-auto">
 
-        <!-- Logo + Desktop Links -->
         <div class="flex items-center gap-6 md:gap-8">
           <Link :href="route('dashboard')" class="text-lg md:text-xl font-black tracking-tight" style="color: #800000; font-family: 'Manrope', sans-serif;">
-            Koperasi Giat
+            GIAT Express
           </Link>
           <div class="hidden md:flex items-center gap-2">
             <Link
@@ -28,10 +26,8 @@
           </div>
         </div>
 
-        <!-- Right Actions -->
         <div class="flex items-center gap-2 md:gap-4">
           <template v-if="authUser">
-            <!-- Mobile search toggle -->
             <button
               class="md:hidden p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-colors"
               @click="showMobileSearch = !showMobileSearch"
@@ -53,13 +49,8 @@
 
             <div class="flex items-center group relative cursor-pointer">
               <div class="w-8 h-8 rounded-full overflow-hidden bg-surface-container-high">
-                <img
-                  :src="displayAvatar"
-                  :alt="displayName"
-                  class="w-full h-full object-cover"
-                />
+                <img :src="displayAvatar" :alt="displayName" class="w-full h-full object-cover" />
               </div>
-              <!-- Dropdown Logout -->
               <div class="absolute right-0 top-10 w-48 bg-surface-container-lowest rounded-xl shadow-xl border border-outline-variant/10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[60] p-2">
                 <button @click="logout" class="w-full text-left px-4 py-3 rounded-lg hover:bg-error/10 text-error flex items-center gap-3 transition-colors">
                   <span class="material-symbols-outlined text-sm">logout</span>
@@ -68,6 +59,7 @@
               </div>
             </div>
           </template>
+
           <template v-else>
             <Link :href="route('login')" class="text-on-surface-variant hover:text-primary font-bold text-sm">Login</Link>
             <Link :href="route('register')" class="bg-primary text-white px-6 py-2 rounded-full font-bold text-sm shadow-lg hover:scale-105 transition-all">Sign Up</Link>
@@ -75,11 +67,7 @@
         </div>
       </div>
 
-      <!-- Mobile Search Expandable -->
-      <div
-        v-show="showMobileSearch"
-        class="md:hidden px-4 pb-3"
-      >
+      <div v-show="showMobileSearch" class="md:hidden px-4 pb-3">
         <div class="flex items-center bg-surface-container-low px-4 py-2.5 rounded-full">
           <span class="material-symbols-outlined text-on-surface-variant text-lg mr-2">search</span>
           <input
@@ -97,7 +85,6 @@
 
     <main class="pt-24 md:pt-28 pb-32 md:pb-12 max-w-7xl mx-auto px-6 space-y-12">
 
-      <!-- Hero & Greeting -->
       <header class="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div class="space-y-2">
           <p class="text-on-surface-variant font-medium tracking-wide">Selamat datang kembali,</p>
@@ -105,7 +92,6 @@
             Halo, {{ displayName }}!
           </h1>
         </div>
-        <!-- Mobile Search -->
         <div class="md:hidden w-full">
           <div class="flex items-center bg-surface-container-lowest px-5 py-4 rounded-xl shadow-[0_12px_32px_rgba(128,0,0,0.04)]">
             <span class="material-symbols-outlined text-primary mr-3">search</span>
@@ -119,111 +105,187 @@
         </div>
       </header>
 
-      <!-- Weather Based Recommendation (Editorial Bento Style) -->
-      <section class="grid grid-cols-1 md:grid-cols-12 gap-6">
-        <!-- Weather Banner -->
-        <div class="md:col-span-8 relative overflow-hidden bg-surface-container-low rounded-xl p-8 flex flex-col justify-between min-h-[320px]">
+      <section v-if="isRecommendationsLoading" class="grid grid-cols-1 md:grid-cols-12 gap-6">
+        <div class="md:col-span-8 bg-surface-container-low rounded-xl min-h-[320px] animate-pulse" />
+        <div class="md:col-span-4 bg-surface-container-lowest rounded-xl min-h-[320px] animate-pulse border border-outline-variant/10" />
+      </section>
+
+      <section
+        v-else-if="recommendations.length === 0"
+        class="grid grid-cols-1 md:grid-cols-12 gap-6"
+      >
+        <div class="md:col-span-12 bg-surface-container-low rounded-xl p-8 flex items-center justify-center min-h-[200px] text-on-surface-variant text-sm gap-2">
+          <span class="material-symbols-outlined">sentiment_neutral</span>
+          Rekomendasi belum tersedia saat ini.
+        </div>
+      </section>
+
+      <section v-else class="grid grid-cols-1 md:grid-cols-12 gap-6">
+        <div
+          class="md:col-span-8 relative overflow-hidden bg-surface-container-low rounded-xl p-8 flex flex-col justify-between min-h-[320px]"
+          :style="{
+            background: `linear-gradient(135deg, ${weatherInfo.gradFrom}, ${weatherInfo.gradTo}), var(--md-sys-color-surface-container-low, #f3eded)`
+          }"
+        >
           <div class="z-10 max-w-md space-y-4">
             <div class="flex items-center gap-3">
               <span
                 class="material-symbols-outlined text-secondary text-4xl"
                 style="font-variation-settings: 'FILL' 1"
-              >wb_sunny</span>
+              >{{ weatherInfo.icon }}</span>
               <span class="text-secondary font-bold uppercase tracking-widest text-sm">
-                Pas buat cuaca panas gini
+                {{ weatherInfo.label }}
               </span>
             </div>
-            <h2 class="text-3xl font-bold text-on-surface leading-tight">
-              Kampus lagi terik banget nih, yuk ademin pake yang segar-segar!
-            </h2>
-            <p class="text-on-surface-variant">
-              Suhu mencapai 32°C di sekitar kampus. Hilangkan dahaga dengan koleksi minuman dingin pilihan kami.
-            </p>
-            <button class="cta-gradient text-white px-8 py-3 rounded-full font-bold inline-flex items-center gap-2 mt-4 hover:scale-105 transition-transform">
-              Lihat Menu Segar
-              <span class="material-symbols-outlined">arrow_forward</span>
-            </button>
+
+            <Transition name="banner-slide" mode="out-in">
+              <div :key="activeIndex" class="space-y-3">
+                <h2 class="text-3xl font-bold text-on-surface leading-tight">
+                  Kampus lagi {{ weatherInfo.tagline }}
+                </h2>
+                <p class="text-on-surface-variant">
+                  <template v-if="tempLabel">{{ tempLabel }} </template>
+                  Coba <strong class="text-on-surface">{{ activeBanner.name }}</strong>
+                  — pilihan tepat buat kamu sekarang.
+                </p>
+              </div>
+            </Transition>
+
+            <Transition name="banner-slide" mode="out-in">
+              <div :key="'tags-' + activeIndex" class="flex flex-wrap gap-2">
+                <span
+                  v-for="tag in parseTags(activeBanner.tags)"
+                  :key="tag"
+                  class="text-xs px-3 py-1 rounded-full bg-secondary/10 text-secondary font-medium"
+                >{{ tag }}</span>
+              </div>
+            </Transition>
+
+            <div class="flex items-center gap-4 mt-4">
+              <Link
+                :href="route('products.detail', activeBanner.id)"
+                class="cta-gradient text-white px-8 py-3 rounded-full font-bold inline-flex items-center gap-2 hover:scale-105 transition-transform"
+                @click="trackProductClick(activeBanner)"
+              >
+                {{ activeBanner.category === 'Drink' ? 'Lihat Menu Segar' : 'Pesan Sekarang' }}
+                <span class="material-symbols-outlined">arrow_forward</span>
+              </Link>
+              <span class="font-bold text-primary text-lg">
+                {{ formatPrice(activeBanner.price) }}
+              </span>
+            </div>
           </div>
-          <div class="absolute right-[-40px] bottom-[-20px] w-1/2 h-full opacity-90">
-            <img
-              :src="weatherBanner.image"
-              alt="Iced tea glass"
-              class="w-full h-full object-contain transform rotate-12"
+
+          <Transition name="img-fade" mode="out-in">
+            <div
+              v-if="activeBanner.image || activeBanner.image_url"
+              :key="'img-' + activeIndex"
+              class="absolute right-[-40px] bottom-[-20px] w-1/2 h-full opacity-90 pointer-events-none"
+            >
+              <img
+                :src="activeBanner.image_url || activeBanner.image"
+                :alt="activeBanner.name"
+                class="w-full h-full object-contain transform rotate-12"
+              />
+            </div>
+          </Transition>
+
+          <div
+            v-if="hasMultiple"
+            class="absolute bottom-4 left-8 flex items-center gap-2 z-20"
+          >
+            <button
+              v-for="(_, idx) in recommendations"
+              :key="idx"
+              :aria-label="`Slide ${idx + 1}`"
+              class="rounded-full transition-all duration-300"
+              :class="idx === activeIndex
+                ? 'w-6 h-2 bg-primary'
+                : 'w-2 h-2 bg-on-surface/20 hover:bg-on-surface/40'"
+              @click="goTo(idx)"
             />
+          </div>
+
+          <div
+            v-if="hasMultiple"
+            class="absolute bottom-0 left-0 h-[3px] w-full bg-primary/15 rounded-b-xl overflow-hidden"
+          >
+            <div :key="activeIndex" class="h-full bg-primary origin-left banner-progress" />
           </div>
         </div>
 
-        <!-- Bestseller Card -->
         <div class="md:col-span-4 bg-surface-container-lowest rounded-xl p-6 shadow-[0_12px_32px_rgba(128,0,0,0.06)] flex flex-col items-center text-center justify-center space-y-4 border border-outline-variant/10">
-          <span class="text-sm font-bold text-on-surface-variant uppercase tracking-tighter">
+
+          <span class="text-sm font-bold text-on-surface-variant uppercase tracking-tighter flex items-center gap-1">
+            <span
+              class="material-symbols-outlined text-base text-error"
+              style="font-variation-settings: 'FILL' 1"
+            >local_fire_department</span>
             Terlaris Saat Ini
           </span>
-          <div class="w-32 h-32 rounded-full overflow-hidden bg-surface-container-low p-2">
+
+          <div class="w-32 h-32 rounded-full overflow-hidden bg-surface-container-low p-2 ring-4 ring-primary/10">
             <img
-              :src="bestseller.image"
+              v-if="bestseller?.image_url || bestseller?.image"
+              :src="bestseller.image_url || bestseller.image"
               :alt="bestseller.name"
               class="w-full h-full object-cover rounded-full"
             />
+            <div v-else class="w-full h-full rounded-full bg-surface-container flex items-center justify-center">
+              <span class="material-symbols-outlined text-4xl text-on-surface-variant">lunch_dining</span>
+            </div>
           </div>
-          <h3 class="font-bold text-xl">{{ bestseller.name }}</h3>
-          <p class="text-on-surface-variant text-sm">{{ bestseller.orderCount }}</p>
-          <span class="text-primary font-bold text-lg">{{ bestseller.price }}</span>
+
+          <div class="space-y-1">
+            <h3 class="font-bold text-xl">{{ bestseller?.name }}</h3>
+            <p class="text-on-surface-variant text-sm">Kategori {{ bestseller?.category }}</p>
+            <div v-if="bestseller?.tags" class="flex flex-wrap justify-center gap-1 mt-2">
+              <span
+                v-for="tag in parseTags(bestseller.tags).slice(0, 3)"
+                :key="tag"
+                class="text-xs px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant"
+              >{{ tag }}</span>
+            </div>
+          </div>
+
+          <span class="text-primary font-bold text-lg">{{ formatPrice(bestseller?.price) }}</span>
+
+          <button
+            class="w-full py-2.5 rounded-full border border-primary text-primary font-semibold text-sm hover:bg-primary hover:text-white transition-colors duration-200"
+            @click="addToCart(bestseller)"
+          >
+            Tambah ke Keranjang
+          </button>
         </div>
       </section>
 
-      <!-- Categories -->
-      <!-- <div v-if="isCategoriesLoading" class="flex gap-3 mb-10 overflow-x-auto pb-2 no-scrollbar">
-        <div v-for="i in 5" :key="i" class="h-10 w-24 bg-surface-container-high rounded-full animate-pulse"></div>
-      </div>
-      <div v-else class="flex gap-2 md:gap-3 mb-8 md:mb-10 overflow-x-auto pb-2 no-scrollbar">
-        <button
-          v-for="cat in categories"
-          :key="cat"
-          @click="selectCategory(cat)"
-          :class="[
-            'px-5 md:px-6 py-2 md:py-2.5 rounded-full font-semibold whitespace-nowrap text-sm transition-all duration-200',
-            activeCategory === cat
-              ? 'bg-primary text-on-primary scale-105 shadow-md'
-              : 'bg-surface-container-high text-on-surface-variant hover:opacity-80'
-          ]"
-        >
-          {{ cat }}
-        </button>
-      </div> -->
-
-      <!-- Recommendations -->
-       <section class="space-y-6">
+      <section class="space-y-6">
         <div class="flex items-center justify-between">
           <h2 class="text-2xl font-bold text-on-surface">Rekomendasi untuk Kamu</h2>
-          
-          <!-- Indikator Cuaca (Konteks AI) -->
-          <div v-if="weather" class="flex items-center gap-1.5 bg-surface-container-high px-3 py-1.5 rounded-full text-xs font-bold text-primary border border-primary/20 shadow-sm">
-            <span class="material-symbols-outlined text-sm">
-              {{ weather.condition === 'Rainy' ? 'rainy' : (weather.condition === 'Cloudy' || weather.condition === 'Overcast' ? 'cloud' : 'sunny') }}
-            </span>
-            <span>{{ weather.temp }}°C</span>
+
+          <div
+            v-if="weatherContext"
+            class="flex items-center gap-1.5 bg-surface-container-high px-3 py-1.5 rounded-full text-xs font-bold text-primary border border-primary/20 shadow-sm"
+          >
+            <span class="material-symbols-outlined text-sm">{{ weatherInfo.icon }}</span>
+            <span>{{ weatherContext.temp }}°C</span>
           </div>
         </div>
 
-        <!-- Loading State -->
         <div v-if="isRecommendationsLoading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-8">
-          <div v-for="i in 3" :key="i" class="animate-pulse bg-surface-container-low rounded-xl h-80"></div>
+          <div v-for="i in 3" :key="i" class="animate-pulse bg-surface-container-low rounded-xl h-80" />
         </div>
-
-        <!-- Product Grid (Membaca dari array 'recommendations') -->
         <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-8">
           <div
             v-for="item in recommendations"
             :key="item.id"
             class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300 group flex flex-col border border-outline-variant/10"
           >
-            <!-- TRACKING: Klik produk dari section rekomendasi -->
-            <Link 
-              :href="route('products.detail', item.id)" 
+            <Link
+              :href="route('products.detail', item.id)"
               class="block flex-grow"
               @click="trackProductClick(item)"
             >
-              <!-- Image -->
               <div class="relative aspect-[4/3] overflow-hidden">
                 <img
                   :src="item.image_url || item.image"
@@ -231,39 +293,40 @@
                   class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
               </div>
-
-              <!-- Info -->
               <div class="p-4 md:p-6 flex flex-col">
                 <div class="flex justify-between items-start mb-3 md:mb-4 gap-2">
                   <h3 class="font-bold text-lg md:text-xl text-on-surface leading-tight" style="font-family: 'Manrope', sans-serif;">
                     {{ item.name }}
                   </h3>
-                  <span class="font-bold text-secondary whitespace-nowrap">Rp {{ item.price }}</span>
+                  <span class="font-bold text-secondary whitespace-nowrap">{{ formatPrice(item.price) }}</span>
                 </div>
                 <p class="text-sm text-on-surface-variant mb-6 md:mb-8 line-clamp-2 leading-relaxed">
                   {{ item.description || 'Deskripsi menu lezat ini.' }}
                 </p>
               </div>
             </Link>
-            
+
             <div class="px-4 pb-4 md:px-6 md:pb-6 mt-auto flex gap-2">
               <button
-                @click="addToCart(item)"
                 class="flex-1 bg-gradient-to-r from-primary to-[#a00000] text-white py-2.5 md:py-3 rounded-xl font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform duration-200 text-sm md:text-base"
+                @click="addToCart(item)"
               >
                 <span class="material-symbols-outlined text-lg">add_shopping_cart</span>
                 Tambah
               </button>
               <button
-                @click="addToWishlist(item)"
                 :class="[
                   'p-2.5 md:p-3 rounded-xl flex items-center justify-center transition-colors duration-200 active:scale-95 border',
-                  wishlistedItems.includes(item.id) 
+                  wishlistedItems.includes(item.id)
                     ? 'bg-surface-container-lowest text-red-500 border-outline-variant/20 hover:bg-red-50'
                     : 'bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container-high border-outline-variant/20'
                 ]"
+                @click="addToWishlist(item)"
               >
-                <span class="material-symbols-outlined" :style="wishlistedItems.includes(item.id) ? 'font-variation-settings: \'FILL\' 1' : ''">favorite</span>
+                <span
+                  class="material-symbols-outlined"
+                  :style="wishlistedItems.includes(item.id) ? 'font-variation-settings: \'FILL\' 1' : ''"
+                >favorite</span>
               </button>
             </div>
           </div>
@@ -300,247 +363,234 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, onUnmounted, watch } from 'vue'
 import { usePage, Link, router } from '@inertiajs/vue3'
 import { cart } from '@/Stores/cart'
 import { route } from 'ziggy-js'
 import axios from 'axios'
 
-const page = usePage()
+const page      = usePage()
+const authUser  = computed(() => page.props.auth.user)
+const displayName = computed(() =>
+  authUser.value?.customer_profile?.name ||
+  authUser.value?.admin_profile?.name ||
+  authUser.value?.email ||
+  'User'
+)
+const displayAvatar = computed(() =>
+  `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName.value)}&color=7F9CF5&background=EBF4FF`
+)
 
-// State
-const searchQuery = ref('')
-const activeCategory = ref('Semua Menu')
-const menuItems = ref([])
-const apiCategories = ref([])
-const isLoading = ref(true)
-const isCategoriesLoading = ref(true)
-const showMobileSearch = ref(false)
-const wishlistedItems = ref([])
-const recommendations = ref([])
-const weather = ref()
-const isRecommendationsLoading = ref(true);
+const searchQuery       = ref('')
+const showMobileSearch  = ref(false)
+const wishlistedItems   = ref([])
+
+const recommendations        = ref([])
+const weatherContext         = ref(null)   
+const isRecommendationsLoading = ref(true)
+const activeIndex    = ref(0)
+let   rotateInterval = null
 
 
-// User
-const authUser = computed(() => page.props.auth.user)
-const displayName = computed(() => {
-  return authUser.value?.customer_profile?.name || authUser.value?.admin_profile?.name || authUser.value?.email || 'User'
-})
-const displayAvatar = computed(() => {
-  return `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName.value)}&color=7F9CF5&background=EBF4FF`
-})
+const activeBanner = computed(() => recommendations.value[activeIndex.value] ?? null)
+const bestseller   = computed(() => recommendations.value[0] ?? null)
+const hasMultiple  = computed(() => recommendations.value.length > 1)
 
-// Nav links
-const navLinks = [
-  { label: 'Beranda', url: route('dashboard'), active: true },
-  { label: 'Menu', url: route('products'), active: false },
-  { label: 'Pesanan', url: route('transaction.history'), active: false },
-]
-
-// Weather banner
-const weatherBanner = {
-  image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA-irJyLepG2118W29nDbnRNY4OuQCtruZHNYZhqUb1xl9KLLlO9DM_qJQzYmpB-sDTfTD5Al3PhcAbocKb8dIdLDmcfzbHc33DAUPovntJxuuwmIac5ujXmEXbxx2lT0RNzDebBnV7rzVFkTVxletS4ruzZZ6lG2Qy0-4p6FMjAdNT8B5ni1xB7KR3IXlZ7q2Auc3N8xXHcsEIDMUnefrls00p5sz3XEgRbrrOt6AynHTBVZ4AfnG9ZQbQvp4WEqtdvwYg3jRy-DvS',
+const WEATHER_MAP = {
+  Sunny:        { icon: 'wb_sunny',     label: 'Pas buat cuaca panas gini',        tagline: 'terik banget nih, yuk ademin pake yang segar-segar!', gradFrom: 'rgba(251,191,36,0.18)',  gradTo: 'rgba(253,186,116,0.08)' },
+  Clear:        { icon: 'wb_sunny',     label: 'Cuaca cerah, mood bagus!',          tagline: 'Hari cerah, saatnya nikmatin makanan favoritmu!',      gradFrom: 'rgba(253,224,71,0.15)',  gradTo: 'rgba(251,191,36,0.06)'  },
+  Cloudy:       { icon: 'wb_cloudy',    label: 'Santai di bawah awan',              tagline: 'Mendung dikit, enak buat ngemil sambil gabut.',         gradFrom: 'rgba(148,163,184,0.18)', gradTo: 'rgba(203,213,225,0.08)' },
+  Rainy:        { icon: 'rainy',        label: 'Hujan-hujanan butuh yang hangat',   tagline: 'Hujan di luar, yuk angetin perut dari dalam!',          gradFrom: 'rgba(96,165,250,0.18)',  gradTo: 'rgba(147,197,253,0.08)' },
+  Drizzle:      { icon: 'rainy',        label: 'Gerimis-gerimisan asik nih',        tagline: 'Gerimis tipis, cocok banget sambil ngupi.',             gradFrom: 'rgba(56,189,248,0.15)',  gradTo: 'rgba(186,230,253,0.06)' },
+  Thunderstorm: { icon: 'thunderstorm', label: 'Badai di luar, aman di dalam',      tagline: 'Amanin perut dulu, biar kuat nunggu reda!',            gradFrom: 'rgba(167,139,250,0.18)', gradTo: 'rgba(196,181,253,0.08)' },
+  Snow:         { icon: 'ac_unit',      label: 'Dingin banget, butuh yang hangat',  tagline: 'Brrr! Waktu terbaik buat yang panas-panas.',           gradFrom: 'rgba(186,230,253,0.18)', gradTo: 'rgba(224,242,254,0.08)' },
 }
 
-// Bestseller
-const bestseller = {
-  name: 'Es Kopi Susu Giat',
-  orderCount: 'Telah dipesan 120+ kali hari ini',
-  price: 'Rp 15.000',
-  image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAenucty_ChILpDrB_Po2IaxtAJiF7fbMZJL8ThqPDmkDXYMs8dOOkF5neuXEFJSbpU2j5v0E8fQ9C-ECeagfy-pWJtWFOCaltLChTRnSHVou9RdnbOjFOmhhXQArMVZ2JBM_pWESiIVcgYwpAszZgLrKNDjYF_O3-XB9DJptZR8S51hVzxtVHKWxoYI43xtVOOgbNN75Je5y13WtWdl7Ym0K4a7CFCVnbJidXUm-fMD9-vjD4VXQmyfeAYsIo6s011VdqU-up4Ikju',
+const weatherInfo = computed(() => {
+  const cond = weatherContext.value?.condition ?? 'Sunny'
+  return WEATHER_MAP[cond] ?? WEATHER_MAP['Sunny']
+})
+
+const tempLabel = computed(() => {
+  const temp = weatherContext.value?.temp
+  return temp ? `Suhu ${temp}°C di sekitar kampus.` : ''
+})
+
+function formatPrice(price) {
+  return 'Rp ' + Number(price).toLocaleString('id-ID')
 }
 
-// Categories
-const categories = computed(() => ['Semua Menu', ...apiCategories.value.map(c => c.name)])
+function parseTags(tagStr) {
+  if (!tagStr) return []
+  return tagStr.split(',').map(t => t.trim()).filter(Boolean).slice(0, 4)
+}
 
-// Methods
-const fetchProducts = async () => {
+function startRotate() {
+  stopRotate()
+  if (!hasMultiple.value) return
+  rotateInterval = setInterval(() => {
+    activeIndex.value = (activeIndex.value + 1) % recommendations.value.length
+  }, 5000)
+}
+
+function stopRotate() {
+  if (rotateInterval) { clearInterval(rotateInterval); rotateInterval = null }
+}
+
+function goTo(idx) {
+  stopRotate()
+  activeIndex.value = idx
+  startRotate()
+}
+
+watch(recommendations, () => { activeIndex.value = 0 })
+
+async function fetchRecommendations() {
+  isRecommendationsLoading.value = true
   try {
-    isLoading.value = true
-    const response = await window.axios.get('/api/v1/products')
-    menuItems.value = response.data.data.map(item => ({
-      ...item,
-      image: item.image || `https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80`,
-      formattedPrice: new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: 'IDR',
-        minimumFractionDigits: 0
-      }).format(item.price),
-      description: item.description || item.ingredients || 'Nikmati kesegaran menu pilihan kami yang dibuat dengan bahan berkualitas.'
-    }))
-  } catch (error) {
-    console.error('Failed to fetch products:', error)
-  } finally {
-    isLoading.value = false
-  }
-}
-
-const fetchCategories = async () => {
-  try {
-    isCategoriesLoading.value = true
-    const response = await window.axios.get('/api/v1/categories')
-    apiCategories.value = response.data.data
-  } catch (error) {
-    console.error('Failed to fetch categories:', error)
-  } finally {
-    isCategoriesLoading.value = false
-  }
-}
-
-onMounted(() => {
-  fetchProducts()
-  fetchCategories()
-  fetchWishlist()
-  fetchRecomendations()
-  entryTime = Date.now();
-})
-
-onBeforeUnmount (()=>{
-  sendTrackingData();
-});
-
-function getCsrfToken() {
-  const match = document.cookie.match(new RegExp('(^|;\\s*)XSRF-TOKEN=([^;]*)'));
-  return match ? decodeURIComponent(match[2]) : "";
-}
-
-const interactionsBatch = ref([]);
-let entryTime = 0;
-
-function logInteraction(productId, type, payloadData = {}){
-  if(!authUser.value) return;
-  interactionsBatch.value.push({
-    product_id: productId,
-    type: type,
-    payload: {
-      ...payloadData,
-      timestamp: new Date().toISOString()
-    }
-  });
-}
-
-function sendTrackingData(){
-  if(interactionsBatch.value.length === 0 || !authUser.value) return;
-
-  const url = '/api/v1/user/interactions';
-  const body = JSON.stringify({ interactions: interactionsBatch.value});
-  fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-XSRF-TOKEN': getCsrfToken(),
-    },
-    body: body,
-    credentials: 'include'
-  }).catch(err => {
-    console.error('Failed to send tracking data:', err);
-  });
-  interactionsBatch.value = [];
-}
-
-function formatLabel(text){
-  if(!text) return 'unknown';
-  if (typeof text === 'object' && text.name) {
-    text = text.name;
-  } else if (typeof text !== 'string') {
-    text = String(text);
-  }
-  return text.toLowerCase().replace(/[^a-z0-9]/g, '_');
-}
-
-function trackProductClick(item){
-  const categoryName = typeof item.category === 'object' ? item.category.name : item.category;
-  logInteraction(item.id, 'click_product_catalog', {
-        category: formatLabel(categoryName || 'unknown')
-    });
-}
-
-function addToCart(item){
-  cart.add(item);
-  logInteraction(item.id, 'add_to_cart_catalog', {
-    action_source: 'catalog_grid'
-  })
-}
-
-function addToWishlist(item){
-  if (wishlistedItems.value.includes(item.id)) {
-    wishlistedItems.value = wishlistedItems.value.filter(id => id !== item.id);
-    logInteraction(item.id, 'unwishlist', {
-      action_source: 'dashboard_grid'
-    });
-  } else {
-    wishlistedItems.value.push(item.id);
-    logInteraction(item.id, 'wishlist', {
-      action_source: 'dashboard_grid'
-    });
-  }
-  sendTrackingData(); // Instantly track it
-}
-
-async function fetchRecomendations(){
-  try{
     const response = await axios.get('/api/v1/user/recommendations', {
-      headers: { 'Accept': 'application/json'},
-      withCredentials: true 
-    });
+      headers: { Accept: 'application/json' },
+      withCredentials: true,
+    })
 
-    if(response.data?.result?.status === 'Success 200'){
-      recommendations.value = response.data.data.recommendations;
-      weather.value = response.data.data.weather;
-      // logInteraction(0, 'view_recommendation_section');
+    if (response.data?.result?.status === 'Success 200') {
+      const data = response.data.data
+
+      weatherContext.value = data.context?.weather ?? null
+
+      const rawRecs = data.recommendations ?? []
+      const recs = rawRecs.map(item => ({
+        ...item,
+        image: item.image || item.image_url || `https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80`,
+        image_url: item.image_url || item.image || `https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80`
+      }))
+
+      if (recs.length > 1) {
+        const first = recs[0]
+        const rest  = recs.slice(1)
+        for (let i = rest.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1))
+          ;[rest[i], rest[j]] = [rest[j], rest[i]]
+        }
+        recommendations.value = [first, ...rest]
+      } else {
+        recommendations.value = recs
+      }
     }
-  }catch(error){
-    console.error('Failed to fetch recommendations:', error);
-  }finally{
-    isRecommendationsLoading.value = false;
+  } catch (err) {
+    console.error('Failed to fetch recommendations:', err)
+  } finally {
+    isRecommendationsLoading.value = false
   }
 }
-
 
 async function fetchWishlist() {
-  if (!authUser.value) return;
+  if (!authUser.value) return
   try {
     const response = await axios.get('/api/v1/user/wishlist', {
-      headers: { 'Accept': 'application/json' },
-      withCredentials: true
-    });
-    if (response.data && response.data.data) {
-      wishlistedItems.value = response.data.data;
+      headers: { Accept: 'application/json' },
+      withCredentials: true,
+    })
+    if (response.data?.data) {
+      wishlistedItems.value = response.data.data
     }
-  } catch (error) {
-    console.error('Failed to fetch wishlist:', error);
+  } catch (err) {
+    console.error('Failed to fetch wishlist:', err)
   }
 }
 
-function selectCategory(cat) {
-    activeCategory.value = cat;
+function addToWishlist(item) {
+  if (!item) return
+  if (wishlistedItems.value.includes(item.id)) {
+    wishlistedItems.value = wishlistedItems.value.filter(id => id !== item.id)
+    logInteraction(item.id, 'unwishlist', { action_source: 'dashboard_grid' })
+  } else {
+    wishlistedItems.value.push(item.id)
+    logInteraction(item.id, 'wishlist', { action_source: 'dashboard_grid' })
+  }
+  sendTrackingData()
 }
 
-const filteredItems = computed(() => {
-  return menuItems.value.filter(item => {
-    const matchCategory =
-      activeCategory.value === 'Semua Menu' || item.category.name === activeCategory.value
-    const matchSearch =
-      !searchQuery.value ||
-      item.name.toLowerCase().includes(searchQuery.value.toLowerCase())
-    return matchCategory && matchSearch
-  })
-})
+function addToCart(item) {
+  if (!item) return
+  cart.add(item)
+  logInteraction(item.id, 'add_to_cart_catalog', { action_source: 'catalog_grid' })
+}
 
-// Bottom nav
+
+const interactionsBatch = ref([])
+let entryTime = 0
+
+function getCsrfToken() {
+  const match = document.cookie.match(new RegExp('(^|;\\s*)XSRF-TOKEN=([^;]*)'))
+  return match ? decodeURIComponent(match[2]) : ''
+}
+
+function formatLabel(text) {
+  if (!text) return 'unknown'
+  if (typeof text === 'object' && text.name) text = text.name
+  else if (typeof text !== 'string') text = String(text)
+  return text.toLowerCase().replace(/[^a-z0-9]/g, '_')
+}
+
+function logInteraction(productId, type, payloadData = {}) {
+  if (!authUser.value) return
+  interactionsBatch.value.push({
+    product_id: productId,
+    type,
+    payload: { ...payloadData, timestamp: new Date().toISOString() },
+  })
+}
+
+function sendTrackingData() {
+  if (interactionsBatch.value.length === 0 || !authUser.value) return
+  const body = JSON.stringify({ interactions: interactionsBatch.value })
+  fetch('/api/v1/user/interactions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-XSRF-TOKEN': getCsrfToken() },
+    body,
+    credentials: 'include',
+  }).catch(err => console.error('Failed to send tracking data:', err))
+  interactionsBatch.value = []
+}
+
+function trackProductClick(item) {
+  if (!item) return
+  const categoryName = typeof item.category === 'object' ? item.category.name : item.category
+  logInteraction(item.id, 'click_product_catalog', {
+    category: formatLabel(categoryName || 'unknown'),
+  })
+}
+
+const navLinks = [
+  { label: 'Beranda',  url: route('dashboard'),          active: true  },
+  { label: 'Menu',     url: route('products'),            active: false },
+  { label: 'Pesanan',  url: route('transaction.history'), active: false },
+]
+
 const bottomNav = computed(() => [
-  { label: 'Beranda', icon: 'home', url: route('dashboard'), active: true },
-  { label: 'Menu', icon: 'restaurant_menu', url: route('products'), active: false },
-  { label: 'Cart', icon: 'shopping_cart', url: route('cart'), active: false, badge: cart.count > 0 ? cart.count : null },
-  { label: 'Profil', icon: 'person', url: '#', active: false },
+  { label: 'Beranda', icon: 'home',            url: route('dashboard'),          active: true  },
+  { label: 'Menu',    icon: 'restaurant_menu', url: route('products'),            active: false },
+  { label: 'Cart',    icon: 'shopping_cart',   url: route('cart'),               active: false, badge: cart.count > 0 ? cart.count : null },
+  { label: 'Profil',  icon: 'person',          url: '#',                         active: false },
 ])
 
-// Methods
-const logout = () => {
-  router.post(route('logout'))
-}
+const logout = () => router.post(route('logout'))
 
+onMounted(async () => {
+  entryTime = Date.now()
+  fetchWishlist()
+  await fetchRecommendations()
+  startRotate()
+})
+
+onBeforeUnmount(() => {
+  sendTrackingData()
+})
+
+onUnmounted(() => {
+  stopRotate()
+})
 </script>
 
 <style>
@@ -572,4 +622,25 @@ h1, h2, h3, .display-font {
 
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Banner text slide */
+.banner-slide-enter-active,
+.banner-slide-leave-active { transition: opacity .35s ease, transform .35s ease; }
+.banner-slide-enter-from   { opacity: 0; transform: translateX(14px); }
+.banner-slide-leave-to     { opacity: 0; transform: translateX(-14px); }
+
+/* Image fade */
+.img-fade-enter-active,
+.img-fade-leave-active { transition: opacity .4s ease; }
+.img-fade-enter-from,
+.img-fade-leave-to     { opacity: 0; }
+
+/* Progress bar */
+@keyframes progress {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+.banner-progress {
+  animation: progress 5s linear forwards;
+}
 </style>

@@ -8,13 +8,16 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-    ]);
+    return redirect()->route('login');
 });
+
+Route::get('/onboarding1', function () {
+    return Inertia::render('Onboarding/Onboarding1');
+})->name('onboarding1');
+
+Route::get('/onboarding2', function () {
+    return Inertia::render('Onboarding/Onboarding2');
+})->name('onboarding2');
 
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
@@ -43,6 +46,10 @@ Route::get('/transaction/{id}/status', [TransactionController::class, 'getTransa
 Route::get('/transaction/validation', function () {
     return Inertia::render('Transaction/Validation');
 })->middleware(['auth', 'verified'])->name('validation');
+
+Route::get('/transaction/history', function () {
+    return Inertia::render('Transaction/TransactionHistory');
+})->middleware(['auth', 'verified'])->name('transaction.history');
 
 Route::get('/products/{id}', [ProductController::class, 'showProductPage'])->middleware(['auth', 'verified'])->name('products.detail');
 

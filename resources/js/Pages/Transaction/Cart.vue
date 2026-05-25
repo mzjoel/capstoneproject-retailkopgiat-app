@@ -8,7 +8,7 @@
         <!-- Logo + Desktop Links -->
         <div class="flex items-center gap-6 md:gap-8">
           <Link :href="route('dashboard')" class="text-lg md:text-xl font-black tracking-tight" style="color: #800000; font-family: 'Manrope', sans-serif;">
-            Koperasi Giat
+            GIAT Express
           </Link>
           <div class="hidden md:flex items-center gap-2">
             <Link
@@ -252,7 +252,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { usePage, Link } from '@inertiajs/vue3'
+import { usePage, Link, router } from '@inertiajs/vue3'
 import { cart } from '@/Stores/cart'
 import { route } from 'ziggy-js'
 
@@ -268,6 +268,8 @@ const displayName = computed(() => {
 const displayAvatar = computed(() => {
   return `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName.value)}&color=7F9CF5&background=EBF4FF`
 })
+
+const logout = () => router.post(route('logout'))
 
 // Nav links
 const navLinks = [

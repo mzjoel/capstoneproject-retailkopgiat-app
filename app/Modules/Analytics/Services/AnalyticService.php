@@ -69,7 +69,8 @@ class AnalyticService{
                             'price' => (float) $product->price,
                             'category' => $product->category->name ?? 'Uncategorized',
                             'tags' => $product->tags,
-                            'image_url' => $product->image_url,
+                            'image' => $product->image,
+                            'image_url' => $product->image,
                             'ai_score' => $mlInfo['score'] ?? 0
                         ];
                     });
@@ -127,7 +128,8 @@ class AnalyticService{
                     'price' => (float) $product->price,
                     'category' => $product->category->name ?? 'Uncategorized',
                     'tags' => $product->tags,
-                    'image_url' => $product->image_url
+                    'image' => $product->image,
+                    'image_url' => $product->image
                 ];
             })
         ];

@@ -4,7 +4,9 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title inertia>{{ config('app.name', 'Laravel') }}</title>
+        <title inertia>{{ config('app.name', 'Giat Express') }}</title>
+
+        <link rel="icon" type="image/png" href="/assets/icons/logoipsum-424.png">
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
@@ -17,6 +19,9 @@
                 data-client-key="{{ config('midtrans.client_key') }}">
         </script>
         @routes
+        <meta name="theme-color" content="#800000">
+        <link rel="apple-touch-icon" href="/assets/icons/logoipsum-424.png">
+        <link rel="manifest" href="/build/manifest.webmanifest">
         @vite(['resources/js/app.js', "resources/js/Pages/{$page['component']}.vue"])
         @inertiaHead
     </head>

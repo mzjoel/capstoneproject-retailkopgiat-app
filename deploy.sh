@@ -1,10 +1,8 @@
 #!/bin/bash
 
-
 APP_DIR="/var/www/capstoneproject-retailkopgiat-app"
 LOG_FILE="/home/ubuntu/deployment_full.log"
 
-# Fungsi Logging Universal
 log_message() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a "$LOG_FILE"
 }
@@ -14,9 +12,7 @@ log_message "Strating Deployment..."
 if [ -d "$APP_DIR" ]; then
     cd "$APP_DIR" || exit 1
     
-    
-    log_message "🔐 Mengatur Permissions (ubuntu:www-data)..."
-    # Mengembalikan kepemilikan agar Git bisa melakukan pull tanpa error permission
+    log_message "🔐 Setting Permissions (ubuntu:www-data)..."
     sudo chown -R ubuntu:www-data .
     sudo chmod -R 775 storage bootstrap/cache
     git config --global --add safe.directory "$APP_DIR"
@@ -33,10 +29,11 @@ if [ -d "$APP_DIR" ]; then
     log_message "⚙️ Optimasi Laravel (Clear Cache & Migrate)..."
     php artisan optimize:clear --no-interaction
     php artisan migrate --force --no-interaction
+    php artisan db:seed --class=AdminSeeder --force --no-interaction
     
-    log_message "✅ Deployment Source Code Selesai."
+    log_message "✅ Source Code Deployment Completed."
 else
-    log_message "❌ GAGAL: Folder aplikasi ($APP_DIR) tidak ditemukan!"
+    log_message "❌ Aplikasi Folder ($APP_DIR) tidak ditemukan!"
     exit 1
 fi
 
