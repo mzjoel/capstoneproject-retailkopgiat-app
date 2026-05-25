@@ -59,6 +59,13 @@ export default defineConfig({
                 ]
             },
             workbox: {
+                navigateFallback: null,
+                cleanupOutdatedCaches: true,
+                globPatterns: [
+                    'assets/icons/*.png',
+                    'assets/screenshots/*.png',
+                    'build/manifest.webmanifest'
+                ],
                 runtimeCaching: [
                     {
                         urlPattern: ({ request }) => request.mode === 'navigate',
@@ -67,7 +74,7 @@ export default defineConfig({
                             cacheName: 'laravel-dynamic-pages',
                             expiration: {
                                 maxEntries: 50,
-                                maxAgeSeconds: 60 * 60 * 24 * 7, 
+                                maxAgeSeconds: 60 * 60 * 24 * 7, // 7 Days
                             },
                         },
                     },
@@ -78,13 +85,33 @@ export default defineConfig({
                             cacheName: 'inertia-json-cache',
                             expiration: {
                                 maxEntries: 50,
-                                maxAgeSeconds: 60 * 60 * 24 * 7,
+                                maxAgeSeconds: 60 * 60 * 24 * 7, // 7 Days
                             }
                         },
+                    },
+                    {
+                        urlPattern: ({ request }) => request.destination === 'style' || request.destination === 'script',
+                        handler: 'StaleWhileRevalidate',
+                        options: {
+                            cacheName: 'static-assets-cache',
+                            expiration: {
+                                maxEntries: 100,
+                                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 Days
+                            }
+                        }
+                    },
+                    {
+                        urlPattern: ({ request }) => request.destination === 'image',
+                        handler: 'CacheFirst',
+                        options: {
+                            cacheName: 'images-cache',
+                            expiration: {
+                                maxEntries: 100,
+                                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 Days
+                            }
+                        }
                     }
-                ],
-                cleanupOutdatedCaches: true,
-                globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg}']
+                ]
             },
             devOptions: {
                 enabled: true,
