@@ -61,6 +61,7 @@ export default defineConfig({
             workbox: {
                 navigateFallback: null,
                 cleanupOutdatedCaches: true,
+                dontCacheBustURLsMatching: /\.[0-8a-f]{8}\./,
                 globPatterns: [
                     'assets/icons/*.png',
                     'assets/screenshots/*.png',
