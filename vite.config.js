@@ -21,7 +21,7 @@ export default defineConfig({
         VitePWA({
             registerType: 'autoUpdate',
             outDir: 'public',
-            buildBase: '/build/',
+            buildBase: '/',
             scope: '/',
             manifest: {
                 name: 'GIAT Express',
@@ -34,15 +34,28 @@ export default defineConfig({
                 start_url: '/',
                 icons: [
                     {
-                        src: '/assets/icons/logoipsum-424.png',
+                        src: '/assets/icons/logoipsum-192.png',
                         sizes: '192x192',
                         type: 'image/png',
                     },
                     {
-                        src: '/assets/icons/logoipsum-424.png',
+                        src: '/assets/icons/logoipsum-512.png',
                         sizes: '512x512',
                         type: 'image/png',
                     },
+                ],
+                screenshots: [
+                    {
+                        src: '/assets/screenshots/mobile.png',
+                        sizes: '576x1024',
+                        type: 'image/png',
+                    },
+                    {
+                        src: '/assets/screenshots/desktop.png',
+                        sizes: '1024x576',
+                        type: 'image/png',
+                        form_factor: 'wide',
+                    }
                 ]
             },
             workbox: {
