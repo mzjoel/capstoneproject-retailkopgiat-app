@@ -14,6 +14,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use App\Modules\Analytics\Models\CustomerProfile;
 use App\Modules\Analytics\Models\AdminProfile;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 
 
 #[Fillable(['name', 'email', 'password'])]
@@ -43,5 +45,10 @@ class User extends Authenticatable
     public function getNameAttribute(): string
     {
         return $this->adminProfile?->name ?? 'Admin Koperasi';
+    }
+
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return $this->role->name === 'Admin';
     }
 }
