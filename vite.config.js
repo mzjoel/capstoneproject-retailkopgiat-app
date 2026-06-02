@@ -34,12 +34,12 @@ export default defineConfig({
                 start_url: '/',
                 icons: [
                     {
-                        src: '/assets/icons/logoipsum-192.png',
+                        src: '/assets/icons/giat-express-icon.png',
                         sizes: '192x192',
                         type: 'image/png',
                     },
                     {
-                        src: '/assets/icons/logoipsum-512.png',
+                        src: '/assets/icons/giat-express-icon.png',
                         sizes: '512x512',
                         type: 'image/png',
                     },
