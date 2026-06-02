@@ -6,6 +6,12 @@
 
         <title inertia>{{ config('app.name', 'Giat Express') }}</title>
 
+        <link rel="icon" type="image/png" sizes="192x192" href="/assets/icons/giat-express-icon.png">
+        <link rel="icon" type="image/png" sizes="128x128" href="/assets/icons/giat-express-icon.png">
+        <link rel="icon" type="image/png" sizes="96x96" href="/assets/icons/giat-express-icon.png">
+        <link rel="icon" type="image/png" sizes="64x64" href="/assets/icons/giat-express-icon.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/giat-express-icon.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/giat-express-icon.png">
         <link rel="icon" type="image/png" href="/assets/icons/giat-express-icon.png">
 
         <!-- Fonts -->

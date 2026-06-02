@@ -30,6 +30,9 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->brandName('GIAT Express')
+            ->brandLogo(asset('assets/icons/giat-express-icon.png'))
+            ->brandLogoHeight('150px')
+            ->favicon(asset('assets/icons/giat-express-icon.png'))
             ->colors([
                 'primary' => Color::Amber,
             ])
@@ -62,8 +65,14 @@ class AdminPanelProvider extends PanelProvider
                 fn (): string => '
                     <link rel="manifest" href="/build/manifest.webmanifest">
                     <meta name="theme-color" content="#800000">
-                    <link rel="apple-touch-icon" href="/assets/icons/logoipsum-424.png">
-                    <link rel="icon" type="image/png" href="/assets/icons/logoipsum-424.png">
+                    <link rel="apple-touch-icon" href="/assets/icons/giat-express-icon.png">
+                    <link rel="icon" type="image/png" sizes="192x192" href="/assets/icons/giat-express-icon.png">
+                    <link rel="icon" type="image/png" sizes="128x128" href="/assets/icons/giat-express-icon.png">
+                    <link rel="icon" type="image/png" sizes="96x96" href="/assets/icons/giat-express-icon.png">
+                    <link rel="icon" type="image/png" sizes="64x64" href="/assets/icons/giat-express-icon.png">
+                    <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/giat-express-icon.png">
+                    <link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/giat-express-icon.png">
+                    <link rel="icon" type="image/png" href="/assets/icons/giat-express-icon.png">
                 ',
             );
     }
