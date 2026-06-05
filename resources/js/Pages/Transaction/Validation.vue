@@ -1,13 +1,12 @@
 <template>
-  <div class="bg-surface text-on-surface min-h-screen">
+  <div class="bg-surface text-on-surface min-h-screen pb-24 lg:pb-0">
 
-    <nav class="fixed top-0 w-full z-50 glass-nav">
-      <div class="flex justify-between items-center px-4 md:px-6 py-3 md:py-4 w-full max-w-7xl mx-auto">
+   <nav class="hidden lg:block fixed top-0 w-full z-50 glass-nav">
+      <div class="flex justify-between items-center px-4 md:px-6 py-1 w-full max-w-7xl mx-auto">
 
-        <!-- Logo + Desktop Links -->
         <div class="flex items-center gap-6 md:gap-8">
-          <Link :href="route('dashboard')" class="text-lg md:text-xl font-black tracking-tight" style="color: #800000; font-family: 'Manrope', sans-serif;">
-            GIAT Express
+          <Link :href="route('dashboard')" class="flex items-center">
+            <img src="/assets/icons/giat-express-icon.png" alt="GIAT Express" class="h-8 md:h-20 w-auto object-contain" />
           </Link>
           <div class="hidden md:flex items-center gap-2">
             <Link
@@ -27,10 +26,8 @@
           </div>
         </div>
 
-        <!-- Right Actions -->
         <div class="flex items-center gap-2 md:gap-4">
           <template v-if="authUser">
-            <!-- Mobile search toggle -->
             <button
               class="md:hidden p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-colors"
               @click="showMobileSearch = !showMobileSearch"
@@ -52,13 +49,8 @@
 
             <div class="flex items-center group relative cursor-pointer">
               <div class="w-8 h-8 rounded-full overflow-hidden bg-surface-container-high">
-                <img
-                  :src="displayAvatar"
-                  :alt="displayName"
-                  class="w-full h-full object-cover"
-                />
+                <img :src="displayAvatar" :alt="displayName" class="w-full h-full object-cover" />
               </div>
-              <!-- Dropdown Logout -->
               <div class="absolute right-0 top-10 w-48 bg-surface-container-lowest rounded-xl shadow-xl border border-outline-variant/10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[60] p-2">
                 <button @click="logout" class="w-full text-left px-4 py-3 rounded-lg hover:bg-error/10 text-error flex items-center gap-3 transition-colors">
                   <span class="material-symbols-outlined text-sm">logout</span>
@@ -67,6 +59,7 @@
               </div>
             </div>
           </template>
+
           <template v-else>
             <Link :href="route('login')" class="text-on-surface-variant hover:text-primary font-bold text-sm">Login</Link>
             <Link :href="route('register')" class="bg-primary text-white px-6 py-2 rounded-full font-bold text-sm shadow-lg hover:scale-105 transition-all">Sign Up</Link>
@@ -74,11 +67,7 @@
         </div>
       </div>
 
-      <!-- Mobile Search Expandable -->
-      <div
-        v-show="showMobileSearch"
-        class="md:hidden px-4 pb-3"
-      >
+      <div v-show="showMobileSearch" class="md:hidden px-4 pb-3">
         <div class="flex items-center bg-surface-container-low px-4 py-2.5 rounded-full">
           <span class="material-symbols-outlined text-on-surface-variant text-lg mr-2">search</span>
           <input
@@ -95,7 +84,7 @@
     </nav>
 
     <!-- Main -->
-    <main class="pt-20 md:py-[15vh] pb-36 md:pb-16 px-4 md:px-6  max-w-6xl mx-auto">
+    <main class="pt-6 lg:pt-[8rem] pb-36 lg:pb-16 px-4 md:px-6  max-w-6xl mx-auto">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12">
 
         <!-- Left: Order Summary -->
@@ -144,15 +133,6 @@
               </div>
             </div>
           </section>
-
-          <!-- Weather / Campus Note -->
-          <div class="bg-secondary-container/10 p-4 md:p-6 rounded-xl flex items-center gap-3 md:gap-4">
-            <span class="material-symbols-outlined text-secondary text-2xl md:text-3xl flex-shrink-0">light_mode</span>
-            <div>
-              <p class="font-bold text-secondary text-sm md:text-base">Cerah di Kampus</p>
-              <p class="text-xs md:text-sm text-on-surface-variant">Nikmati pesananmu di taman pusat koperasi.</p>
-            </div>
-          </div>
         </div>
 
         <!-- Right: Payment & Total -->
@@ -241,22 +221,49 @@
     </main>
 
     <!-- Bottom Navigation Bar (Mobile Only) -->
-    <nav class="md:hidden fixed bottom-0 left-0 w-full z-50 glass-nav flex justify-around items-center px-4 pb-8 pt-4 rounded-t-3xl shadow-[0_-8px_24px_rgba(128,0,0,0.04)]">
-      <button
-        v-for="item in bottomNav"
-        :key="item.label"
-        :class="[
-          'flex flex-col items-center justify-center transition-transform active:scale-90',
-          item.active ? 'text-primary' : 'text-on-surface-variant'
-        ]"
-      >
-        <span
-          class="material-symbols-outlined"
-          :style="item.active ? 'font-variation-settings: \'FILL\' 1' : ''"
-        >{{ item.icon }}</span>
-        <span class="text-[10px] font-bold uppercase tracking-widest mt-1">{{ item.label }}</span>
-        <span v-if="item.active" class="w-1 h-1 bg-primary rounded-full mt-0.5"></span>
-      </button>
+    <nav class="lg:hidden glass-nav fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 rounded-t-3xl shadow-[0_-8px_24px_rgba(128,0,0,0.04)]">
+      <template v-for="navItem in bottomNav" :key="navItem.label">
+        <div
+          v-if="navItem.label === 'Profil' || navItem.label === 'Profile'"
+          class="flex flex-col items-center justify-center relative cursor-pointer select-none active:scale-90 transition-transform"
+          @click="showMobileProfileMenu = !showMobileProfileMenu"
+        >
+          <div class="w-6 h-6 rounded-full overflow-hidden bg-surface-container-high mb-1">
+            <img :src="displayAvatar" :alt="displayName" class="w-full h-full object-cover" />
+          </div>
+          <span class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">{{ navItem.label }}</span>
+          
+          <!-- Dropdown/Popout for Logout -->
+          <div
+            v-if="showMobileProfileMenu"
+            class="absolute bottom-16 right-0 w-30 bg-surface-container-lowest rounded-xl shadow-xl border border-outline-variant/10 p-2 z-[60]"
+          >
+            <button
+              @click.stop="logout"
+              class="w-full text-left px-4 py-3 rounded-lg hover:bg-error/10 text-error flex items-center gap-3 transition-colors"
+            >
+              <span class="material-symbols-outlined text-sm">logout</span>
+              <span class="font-bold text-sm">Logout</span>
+            </button>
+          </div>
+        </div>
+
+        <Link
+          v-else
+          :href="navItem.url"
+          :class="[
+            'flex flex-col items-center justify-center relative transition-transform active:scale-90',
+            navItem.active ? 'text-primary' : 'text-on-surface-variant'
+          ]"
+        >
+          <span class="material-symbols-outlined mb-1">{{ navItem.icon }}</span>
+          <span class="text-[10px] font-bold uppercase tracking-widest">{{ navItem.label }}</span>
+          <span
+            v-if="navItem.badge"
+            class="absolute -top-1 -right-1 bg-primary text-white text-[8px] w-4 h-4 rounded-full flex items-center justify-center"
+          >{{ navItem.badge }}</span>
+        </Link>
+      </template>
     </nav>
 
   </div>
@@ -274,9 +281,9 @@ const authUser = computed(() => page.props.auth.user)
 const displayName = computed(() => {
   return authUser.value?.customer_profile?.name || authUser.value?.admin_profile?.name || authUser.value?.email || 'User'
 })
-const displayAvatar = computed(() => {
-  return `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName.value)}&color=7F9CF5&background=EBF4FF`
-})
+const displayAvatar = computed(() => 
+  authUser.value?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName.value)}&background=800000&color=fff`
+)
 
 const logout = () => {
   router.post(route('logout'));
@@ -285,6 +292,7 @@ const logout = () => {
 //State
 const searchQuery = ref('')
 const showMobileSearch = ref(false)
+const showMobileProfileMenu = ref(false)
 const isLoading = ref(false)
 const selectedPayment = ref('qris')
 const paymentMethods = ref([
@@ -309,12 +317,12 @@ const navLinks = [
 ]
 
 // Bottom nav
-const bottomNav = [
-  { icon: 'restaurant_menu', label: 'Menu', url: route('products'), active: false },
-  { icon: 'assignment', label: 'Orders', url: '#', active: false },
-  { icon: 'shopping_bag', label: 'Cart', url: route('cart'), active: true },
-  { icon: 'person', label: 'Profile', url: '#', active: false },
-]
+const bottomNav = computed(() => [
+  { label: 'Beranda', icon: 'home',            url: route('dashboard'),          active: false },
+  { label: 'Menu',    icon: 'restaurant_menu', url: route('products'),            active: false },
+  { label: 'Cart',    icon: 'shopping_cart',   url: route('cart'),               active: true,  badge: cart.count > 0 ? cart.count : null },
+  { label: 'Profil',  icon: 'person',          url: '#',                         active: false },
+])
 
 const validationData = ref(null)
 

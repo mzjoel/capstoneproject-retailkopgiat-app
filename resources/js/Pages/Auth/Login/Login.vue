@@ -1,6 +1,6 @@
 <template>
   <div class="bg-surface text-on-surface min-h-screen flex flex-col">
-    <Head title="Daftar" />
+    <Head title="Login" />
     <!-- Login Content Wrapper -->
     <main class="flex-grow flex items-center justify-center px-6 py-12">
       <div class="w-full max-w-5xl grid md:grid-cols-2 gap-12 items-center">
@@ -14,10 +14,8 @@
           <!-- Header -->
           <div class="mb-10 text-center md:text-left">
             <!-- Mobile branding -->
-            <div class="md:hidden mb-6">
-              <span class="text-primary-container font-headline font-extrabold text-2xl tracking-tight branding">
-                GIAT Express
-              </span>
+            <div class="md:hidden mb-6 flex justify-center">
+              <img src="/assets/icons/giat-express-icon.png" alt="GIAT Express" class="h-12 w-auto object-contain" />
             </div>
             <h2 class="text-3xl font-headline font-bold text-on-surface mb-2">Selamat Datang</h2>
             <p class="text-on-surface-variant font-body">
@@ -47,14 +45,14 @@
               v-model="form.password"
               :error="form.errors.password"
             >
-              <template #action>
+              <!-- <template #action>
                 <a
                   href="#"
                   class="text-xs font-label font-semibold text-primary transition-colors hover:underline underline-offset-4"
                 >
                   Lupa Password?
                 </a>
-              </template>
+              </template> -->
             </AuthInput>
 
 
