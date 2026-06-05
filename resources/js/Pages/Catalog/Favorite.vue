@@ -1,13 +1,13 @@
 <template>
-  <div class="bg-background text-on-surface font-body min-h-screen">
+  <div class="bg-background text-on-surface font-body min-h-screen pb-24 lg:pb-0">
 
     <!-- Top Navigation Bar -->
-    <nav class="fixed top-0 w-full z-50 glass-nav">
-      <div class="flex justify-between items-center px-4 md:px-6 py-3 md:py-4 w-full max-w-7xl mx-auto">
-        <!-- Logo + Desktop Links -->
+    <nav class="hidden lg:block fixed top-0 w-full z-50 glass-nav">
+      <div class="flex justify-between items-center px-4 md:px-6 py-1 w-full max-w-7xl mx-auto">
+
         <div class="flex items-center gap-6 md:gap-8">
-          <Link :href="route('dashboard')" class="text-lg md:text-xl font-black tracking-tight" style="color: #800000; font-family: 'Manrope', sans-serif;">
-            GIAT Express
+          <Link :href="route('dashboard')" class="flex items-center">
+            <img src="/assets/icons/giat-express-icon.png" alt="GIAT Express" class="h-8 md:h-20 w-auto object-contain" />
           </Link>
           <div class="hidden md:flex items-center gap-2">
             <Link
@@ -27,10 +27,8 @@
           </div>
         </div>
 
-        <!-- Right Actions -->
         <div class="flex items-center gap-2 md:gap-4">
           <template v-if="authUser">
-            <!-- Mobile search toggle -->
             <button
               class="md:hidden p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-colors"
               @click="showMobileSearch = !showMobileSearch"
@@ -46,19 +44,14 @@
               >{{ cart.count }}</span>
             </Link>
 
-            <Link :href="route('product.wishlist')" class="hidden md:block p-2 text-primary bg-surface-container-high rounded-full transition-colors active:scale-95">
-              <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">favorite</span>
+            <Link :href="route('product.wishlist')" class="hidden md:block p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container-high rounded-full transition-colors active:scale-95">
+              <span class="material-symbols-outlined">favorite</span>
             </Link>
 
             <div class="flex items-center group relative cursor-pointer">
               <div class="w-8 h-8 rounded-full overflow-hidden bg-surface-container-high">
-                <img
-                  :src="displayAvatar"
-                  :alt="displayName"
-                  class="w-full h-full object-cover"
-                />
+                <img :src="displayAvatar" :alt="displayName" class="w-full h-full object-cover" />
               </div>
-              <!-- Dropdown Logout -->
               <div class="absolute right-0 top-10 w-48 bg-surface-container-lowest rounded-xl shadow-xl border border-outline-variant/10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[60] p-2">
                 <button @click="logout" class="w-full text-left px-4 py-3 rounded-lg hover:bg-error/10 text-error flex items-center gap-3 transition-colors">
                   <span class="material-symbols-outlined text-sm">logout</span>
@@ -67,14 +60,15 @@
               </div>
             </div>
           </template>
+
+          <template v-else>
+            <Link :href="route('login')" class="text-on-surface-variant hover:text-primary font-bold text-sm">Login</Link>
+            <Link :href="route('register')" class="bg-primary text-white px-6 py-2 rounded-full font-bold text-sm shadow-lg hover:scale-105 transition-all">Sign Up</Link>
+          </template>
         </div>
       </div>
 
-      <!-- Mobile Search Expandable -->
-      <div
-        v-show="showMobileSearch"
-        class="md:hidden px-4 pb-3"
-      >
+      <div v-show="showMobileSearch" class="md:hidden px-4 pb-3">
         <div class="flex items-center bg-surface-container-low px-4 py-2.5 rounded-full">
           <span class="material-symbols-outlined text-on-surface-variant text-lg mr-2">search</span>
           <input
@@ -91,7 +85,7 @@
     </nav>
 
     <!-- Header -->
-    <div class="pt-28 pb-10 px-6 max-w-7xl mx-auto flex items-center gap-4">
+    <div class="pt-6 lg:pt-28 pb-10 px-6 max-w-7xl mx-auto flex items-center gap-4">
       <Link :href="route('dashboard')" class="p-2 bg-surface-container-low rounded-full hover:bg-surface-container-high transition-colors">
         <span class="material-symbols-outlined">arrow_back</span>
       </Link>
@@ -160,8 +154,8 @@
               @click="addToCart(item)"
               class="flex-1 bg-gradient-to-r from-primary to-[#a00000] text-white py-2.5 md:py-3 rounded-xl font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform duration-200 text-sm md:text-base"
             >
-              <span class="material-symbols-outlined text-lg">add_shopping_cart</span>
-              Tambah
+              <span class="material-symbols-outlined text-lg">shopping_bag</span>
+              Pesan Sekarang
             </button>
             <button
               @click="toggleFavorite(item)"
@@ -180,23 +174,49 @@
     </div>
 
     <!-- BottomNavBar (Mobile Only) -->
-    <nav class="md:hidden glass-nav fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 rounded-t-3xl shadow-[0_-8px_24px_rgba(128,0,0,0.04)]">
-      <Link
-        v-for="navItem in bottomNav"
-        :key="navItem.label"
-        :href="navItem.url"
-        :class="[
-          'flex flex-col items-center justify-center relative transition-transform active:scale-90',
-          navItem.active ? 'text-primary' : 'text-on-surface-variant'
-        ]"
-      >
-        <span class="material-symbols-outlined">{{ navItem.icon }}</span>
-        <span class="text-[10px] font-bold uppercase tracking-widest mt-1">{{ navItem.label }}</span>
-        <span
-          v-if="navItem.badge"
-          class="absolute -top-1 -right-1 bg-primary text-white text-[8px] w-4 h-4 rounded-full flex items-center justify-center"
-        >{{ navItem.badge }}</span>
-      </Link>
+    <nav class="lg:hidden glass-nav fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 rounded-t-3xl shadow-[0_-8px_24px_rgba(128,0,0,0.04)]">
+      <template v-for="navItem in bottomNav" :key="navItem.label">
+        <div
+          v-if="navItem.label === 'Profil'"
+          class="flex flex-col items-center justify-center relative cursor-pointer select-none active:scale-90 transition-transform"
+          @click="showMobileProfileMenu = !showMobileProfileMenu"
+        >
+          <div class="w-6 h-6 rounded-full overflow-hidden bg-surface-container-high mb-1">
+            <img :src="displayAvatar" :alt="displayName" class="w-full h-full object-cover" />
+          </div>
+          <span class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">{{ navItem.label }}</span>
+          
+          <!-- Dropdown/Popout for Logout -->
+          <div
+            v-if="showMobileProfileMenu"
+            class="absolute bottom-16 right-0 w-30 bg-surface-container-lowest rounded-xl shadow-xl border border-outline-variant/10 p-2 z-[60]"
+          >
+            <button
+              @click.stop="logout"
+              class="w-full text-left px-4 py-3 rounded-lg hover:bg-error/10 text-error flex items-center gap-3 transition-colors"
+            >
+              <span class="material-symbols-outlined text-sm">logout</span>
+              <span class="font-bold text-sm">Logout</span>
+            </button>
+          </div>
+        </div>
+
+        <Link
+          v-else
+          :href="navItem.url"
+          :class="[
+            'flex flex-col items-center justify-center relative transition-transform active:scale-90',
+            navItem.active ? 'text-primary' : 'text-on-surface-variant'
+          ]"
+        >
+          <span class="material-symbols-outlined mb-1">{{ navItem.icon }}</span>
+          <span class="text-[10px] font-bold uppercase tracking-widest">{{ navItem.label }}</span>
+          <span
+            v-if="navItem.badge"
+            class="absolute -top-1 -right-1 bg-primary text-white text-[8px] w-4 h-4 rounded-full flex items-center justify-center"
+          >{{ navItem.badge }}</span>
+        </Link>
+      </template>
     </nav>
   </div>
 </template>
@@ -213,6 +233,7 @@ const wishlist = ref([])
 const isLoading = ref(true)
 
 const showMobileSearch = ref(false)
+const showMobileProfileMenu = ref(false)
 const searchQuery = ref('')
 const displayName = computed(() => {
   return authUser.value?.customer_profile?.name || authUser.value?.admin_profile?.name || authUser.value?.email || 'User'
@@ -306,10 +327,8 @@ const toggleFavorite = (item) => {
 }
 
 const addToCart = (item) => {
-  cart.add(item)
-  logInteraction(item.id, 'add_to_cart_wishlist', {
-    action_source: 'favorite_page'
-  })
+  if (!item) return
+  router.visit(route('products.detail', item.id))
 }
 </script>
 

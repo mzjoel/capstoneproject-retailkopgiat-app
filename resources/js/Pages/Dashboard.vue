@@ -1,12 +1,12 @@
 <template>
-  <div class="bg-background text-on-surface min-h-screen pb-24 md:pb-0">
+  <div class="bg-background text-on-surface min-h-screen pb-24 lg:pb-0">
 
-    <nav class="fixed top-0 w-full z-50 glass-nav">
-      <div class="flex justify-between items-center px-4 md:px-6 py-3 md:py-4 w-full max-w-7xl mx-auto">
+    <nav class="hidden lg:block fixed top-0 w-full z-50 glass-nav">
+      <div class="flex justify-between items-center px-4 md:px-6 py-1 w-full max-w-7xl mx-auto">
 
         <div class="flex items-center gap-6 md:gap-8">
-          <Link :href="route('dashboard')" class="text-lg md:text-xl font-black tracking-tight" style="color: #800000; font-family: 'Manrope', sans-serif;">
-            GIAT Express
+          <Link :href="route('dashboard')" class="flex items-center">
+            <img src="/assets/icons/giat-express-icon.png" alt="GIAT Express" class="h-8 md:h-20 w-auto object-contain" />
           </Link>
           <div class="hidden md:flex items-center gap-2">
             <Link
@@ -83,25 +83,13 @@
       <div class="bg-outline-variant/20 h-px w-full"></div>
     </nav>
 
-    <main class="pt-24 md:pt-28 pb-32 md:pb-12 max-w-7xl mx-auto px-6 space-y-12">
+    <main class="pt-6 lg:pt-28 pb-32 lg:pb-12 max-w-7xl mx-auto px-6 space-y-12">
 
       <header class="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div class="space-y-2">
-          <p class="text-on-surface-variant font-medium tracking-wide">Selamat datang kembali,</p>
           <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-primary">
             Halo, {{ displayName }}!
           </h1>
-        </div>
-        <div class="md:hidden w-full">
-          <div class="flex items-center bg-surface-container-lowest px-5 py-4 rounded-xl shadow-[0_12px_32px_rgba(128,0,0,0.04)]">
-            <span class="material-symbols-outlined text-primary mr-3">search</span>
-            <input
-              v-model="searchQuery"
-              class="bg-transparent border-none focus:ring-0 text-base w-full"
-              placeholder="Lapar mau makan apa?"
-              type="text"
-            />
-          </div>
         </div>
       </header>
 
@@ -251,10 +239,11 @@
           <span class="text-primary font-bold text-lg">{{ formatPrice(bestseller?.price) }}</span>
 
           <button
-            class="w-full py-2.5 rounded-full border border-primary text-primary font-semibold text-sm hover:bg-primary hover:text-white transition-colors duration-200"
+            class="w-full py-2.5 rounded-full border border-primary text-primary font-semibold text-sm hover:bg-primary hover:text-white transition-colors duration-200 flex items-center justify-center gap-2"
             @click="addToCart(bestseller)"
           >
-            Tambah ke Keranjang
+            <span class="material-symbols-outlined text-sm">shopping_bag</span>
+            Pesan Sekarang
           </button>
         </div>
       </section>
@@ -311,8 +300,8 @@
                 class="flex-1 bg-gradient-to-r from-primary to-[#a00000] text-white py-2.5 md:py-3 rounded-xl font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform duration-200 text-sm md:text-base"
                 @click="addToCart(item)"
               >
-                <span class="material-symbols-outlined text-lg">add_shopping_cart</span>
-                Tambah
+                <span class="material-symbols-outlined text-lg">shopping_bag</span>
+                Pesan Sekarang
               </button>
               <button
                 :class="[
@@ -340,23 +329,49 @@
 
     </main>
 
-    <nav class="md:hidden glass-nav fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 rounded-t-3xl shadow-[0_-8px_24px_rgba(128,0,0,0.04)]">
-      <Link
-        v-for="navItem in bottomNav"
-        :key="navItem.label"
-        :href="navItem.url"
-        :class="[
-          'flex flex-col items-center justify-center relative transition-transform active:scale-90',
-          navItem.active ? 'text-primary' : 'text-on-surface-variant'
-        ]"
-      >
-        <span class="material-symbols-outlined">{{ navItem.icon }}</span>
-        <span class="text-[10px] font-bold uppercase tracking-widest mt-1">{{ navItem.label }}</span>
-        <span
-          v-if="navItem.badge"
-          class="absolute -top-1 -right-1 bg-primary text-white text-[8px] w-4 h-4 rounded-full flex items-center justify-center"
-        >{{ navItem.badge }}</span>
-      </Link>
+    <nav class="lg:hidden glass-nav fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 rounded-t-3xl shadow-[0_-8px_24px_rgba(128,0,0,0.04)]">
+      <template v-for="navItem in bottomNav" :key="navItem.label">
+        <div
+          v-if="navItem.label === 'Profil'"
+          class="flex flex-col items-center justify-center relative cursor-pointer select-none active:scale-90 transition-transform"
+          @click="showMobileProfileMenu = !showMobileProfileMenu"
+        >
+          <div class="w-6 h-6 rounded-full overflow-hidden bg-surface-container-high mb-1">
+            <img :src="displayAvatar" :alt="displayName" class="w-full h-full object-cover" />
+          </div>
+          <span class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">{{ navItem.label }}</span>
+          
+          <!-- Dropdown/Popout for Logout -->
+          <div
+            v-if="showMobileProfileMenu"
+            class="absolute bottom-16 right-0 w-30 bg-surface-container-lowest rounded-xl shadow-xl border border-outline-variant/10 p-2 z-[60]"
+          >
+            <button
+              @click.stop="logout"
+              class="w-full text-left px-4 py-3 rounded-lg hover:bg-error/10 text-error flex items-center gap-3 transition-colors"
+            >
+              <span class="material-symbols-outlined text-sm">logout</span>
+              <span class="font-bold text-sm">Logout</span>
+            </button>
+          </div>
+        </div>
+
+        <Link
+          v-else
+          :href="navItem.url"
+          :class="[
+            'flex flex-col items-center justify-center relative transition-transform active:scale-90',
+            navItem.active ? 'text-primary' : 'text-on-surface-variant'
+          ]"
+        >
+          <span class="material-symbols-outlined mb-1">{{ navItem.icon }}</span>
+          <span class="text-[10px] font-bold uppercase tracking-widest">{{ navItem.label }}</span>
+          <span
+            v-if="navItem.badge"
+            class="absolute -top-1 -right-1 bg-primary text-white text-[8px] w-4 h-4 rounded-full flex items-center justify-center"
+          >{{ navItem.badge }}</span>
+        </Link>
+      </template>
     </nav>
 
   </div>
@@ -377,13 +392,14 @@ const displayName = computed(() =>
   authUser.value?.email ||
   'User'
 )
-const displayAvatar = computed(() =>
-  `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName.value)}&color=7F9CF5&background=EBF4FF`
+const displayAvatar = computed(() => 
+  authUser.value?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName.value)}&background=800000&color=fff`
 )
 
 const searchQuery       = ref('')
 const showMobileSearch  = ref(false)
 const wishlistedItems   = ref([])
+const showMobileProfileMenu = ref(false)
 
 const recommendations        = ref([])
 const weatherContext         = ref(null)   
@@ -513,8 +529,7 @@ function addToWishlist(item) {
 
 function addToCart(item) {
   if (!item) return
-  cart.add(item)
-  logInteraction(item.id, 'add_to_cart_catalog', { action_source: 'catalog_grid' })
+  router.visit(route('products.detail', item.id))
 }
 
 

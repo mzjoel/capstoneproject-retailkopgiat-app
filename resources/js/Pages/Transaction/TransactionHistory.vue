@@ -1,13 +1,14 @@
 <template>
-  <div class="bg-background text-on-surface min-h-screen pb-24 md:pb-0">
+  <div class="bg-background text-on-surface min-h-screen pb-24 lg:pb-0">
 
     <!-- Top Navigation Bar -->
-    <nav class="fixed top-0 w-full z-50 glass-nav bg-[#faf9f6]/90 backdrop-blur-md border-b border-outline-variant/20">
-      <div class="flex justify-between items-center px-4 md:px-6 py-3 md:py-4 w-full max-w-7xl mx-auto">
-        <!-- Logo + Desktop Links -->
+    
+   <nav class="hidden lg:block fixed top-0 w-full z-50 glass-nav">
+      <div class="flex justify-between items-center px-4 md:px-6 py-1 w-full max-w-7xl mx-auto">
+
         <div class="flex items-center gap-6 md:gap-8">
-          <Link :href="route('dashboard')" class="text-lg md:text-xl font-black tracking-tight" style="color: #800000; font-family: 'Manrope', sans-serif;">
-            GIAT Express
+          <Link :href="route('dashboard')" class="flex items-center">
+            <img src="/assets/icons/giat-express-icon.png" alt="GIAT Express" class="h-8 md:h-20 w-auto object-contain" />
           </Link>
           <div class="hidden md:flex items-center gap-2">
             <Link
@@ -27,10 +28,8 @@
           </div>
         </div>
 
-        <!-- Right Actions -->
         <div class="flex items-center gap-2 md:gap-4">
           <template v-if="authUser">
-            <!-- Mobile search toggle -->
             <button
               class="md:hidden p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-colors"
               @click="showMobileSearch = !showMobileSearch"
@@ -52,13 +51,8 @@
 
             <div class="flex items-center group relative cursor-pointer">
               <div class="w-8 h-8 rounded-full overflow-hidden bg-surface-container-high">
-                <img
-                  :src="displayAvatar"
-                  :alt="displayName"
-                  class="w-full h-full object-cover"
-                />
+                <img :src="displayAvatar" :alt="displayName" class="w-full h-full object-cover" />
               </div>
-              <!-- Dropdown Logout -->
               <div class="absolute right-0 top-10 w-48 bg-surface-container-lowest rounded-xl shadow-xl border border-outline-variant/10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[60] p-2">
                 <button @click="logout" class="w-full text-left px-4 py-3 rounded-lg hover:bg-error/10 text-error flex items-center gap-3 transition-colors">
                   <span class="material-symbols-outlined text-sm">logout</span>
@@ -67,6 +61,7 @@
               </div>
             </div>
           </template>
+
           <template v-else>
             <Link :href="route('login')" class="text-on-surface-variant hover:text-primary font-bold text-sm">Login</Link>
             <Link :href="route('register')" class="bg-primary text-white px-6 py-2 rounded-full font-bold text-sm shadow-lg hover:scale-105 transition-all">Sign Up</Link>
@@ -74,7 +69,6 @@
         </div>
       </div>
 
-      <!-- Mobile Search Expandable -->
       <div v-show="showMobileSearch" class="md:hidden px-4 pb-3">
         <div class="flex items-center bg-surface-container-low px-4 py-2.5 rounded-full">
           <span class="material-symbols-outlined text-on-surface-variant text-lg mr-2">search</span>
@@ -87,18 +81,17 @@
           />
         </div>
       </div>
+
+      <div class="bg-outline-variant/20 h-px w-full"></div>
     </nav>
 
     <!-- Main Content -->
-    <main class="pt-24 md:pt-28 pb-32 md:pb-12 max-w-7xl mx-auto px-6 space-y-12">
+    <main class="pt-6 lg:pt-28 pb-32 lg:pb-12 max-w-7xl mx-auto px-6 space-y-12">
       <!-- Header -->
       <header class="mb-8 md:mb-12">
         <h1 class="text-3xl md:text-4xl lg:text-5xl font-extrabold text-primary tracking-tight mb-1 md:mb-2 font-headline">
-          Order History
+          Pesanan
         </h1>
-        <p class="text-on-surface-variant font-medium text-sm md:text-base">
-          Revisit your campus favorites and academic fuel.
-        </p>
       </header>
 
       <!-- Stats Bento Section -->
@@ -107,7 +100,7 @@
         <div class="md:col-span-2 bg-surface-container-low rounded-3xl p-6 md:p-8 flex flex-col justify-between relative overflow-hidden min-h-[180px]">
           <div class="relative z-10 space-y-3 md:space-y-4">
             <span class="text-secondary font-bold text-xs uppercase tracking-widest block">
-              Frequent Order
+              Pesan Lagi Yuk!
             </span>
             <h2 class="text-2xl md:text-3xl font-bold text-primary max-w-xs leading-tight">
               {{ frequentOrder ? frequentOrder.name : 'Belum ada riwayat' }}
@@ -205,22 +198,49 @@
     </main>
 
     <!-- Mobile Bottom Navigation Bar -->
-    <nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 bg-[#faf9f6]/90 backdrop-blur-md rounded-t-3xl border-t border-outline-variant/10 shadow-[0_-8px_24px_rgba(128,0,0,0.04)]">
-      <Link
-        v-for="item in bottomNav"
-        :key="item.label"
-        :href="item.url"
-        :class="[
-          'flex flex-col items-center justify-center transition-transform active:scale-90 hover:scale-110',
-          item.active ? 'text-primary' : 'text-on-surface-variant'
-        ]"
-      >
-        <span class="material-symbols-outlined" :style="item.active ? 'font-variation-settings: \'FILL\' 1' : ''">
-          {{ item.icon }}
-        </span>
-        <span class="text-[10px] font-bold uppercase tracking-widest mt-1">{{ item.label }}</span>
-        <span v-if="item.active" class="w-1 h-1 bg-primary-container rounded-full mt-0.5"></span>
-      </Link>
+    <nav class="lg:hidden glass-nav fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 rounded-t-3xl shadow-[0_-8px_24px_rgba(128,0,0,0.04)]">
+      <template v-for="navItem in bottomNav" :key="navItem.label">
+        <div
+          v-if="navItem.label === 'Profil' || navItem.label === 'Profile'"
+          class="flex flex-col items-center justify-center relative cursor-pointer select-none active:scale-90 transition-transform"
+          @click="showMobileProfileMenu = !showMobileProfileMenu"
+        >
+          <div class="w-6 h-6 rounded-full overflow-hidden bg-surface-container-high mb-1">
+            <img :src="displayAvatar" :alt="displayName" class="w-full h-full object-cover" />
+          </div>
+          <span class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">{{ navItem.label }}</span>
+          
+          <!-- Dropdown/Popout for Logout -->
+          <div
+            v-if="showMobileProfileMenu"
+            class="absolute bottom-16 right-0 w-30 bg-surface-container-lowest rounded-xl shadow-xl border border-outline-variant/10 p-2 z-[60]"
+          >
+            <button
+              @click.stop="logout"
+              class="w-full text-left px-4 py-3 rounded-lg hover:bg-error/10 text-error flex items-center gap-3 transition-colors"
+            >
+              <span class="material-symbols-outlined text-sm">logout</span>
+              <span class="font-bold text-sm">Logout</span>
+            </button>
+          </div>
+        </div>
+
+        <Link
+          v-else
+          :href="navItem.url"
+          :class="[
+            'flex flex-col items-center justify-center relative transition-transform active:scale-90',
+            navItem.active ? 'text-primary' : 'text-on-surface-variant'
+          ]"
+        >
+          <span class="material-symbols-outlined mb-1">{{ navItem.icon }}</span>
+          <span class="text-[10px] font-bold uppercase tracking-widest">{{ navItem.label }}</span>
+          <span
+            v-if="navItem.badge"
+            class="absolute -top-1 -right-1 bg-primary text-white text-[8px] w-4 h-4 rounded-full flex items-center justify-center"
+          >{{ navItem.badge }}</span>
+        </Link>
+      </template>
     </nav>
 
   </div>
@@ -250,6 +270,7 @@ const navLinks = [
 ]
 
 const showMobileSearch = ref(false)
+const showMobileProfileMenu = ref(false)
 const searchQuery = ref('')
 const rawTransactions = ref([])
 const isLoading = ref(true)
@@ -258,12 +279,12 @@ const isLoading = ref(true)
 // NAVIGATION LINKS
 // ============================================================================
 
-const bottomNav = [
-  { icon: 'restaurant_menu', label: 'Menu', url: route('dashboard'), active: false },
-  { icon: 'assignment', label: 'Orders', url: route('transaction.history'), active: true },
-  { icon: 'shopping_bag', label: 'Cart', url: route('cart'), active: false },
-  { icon: 'person', label: 'Profile', url: route('profile.edit'), active: false },
-]
+const bottomNav = computed(() => [
+  { label: 'Beranda', icon: 'home',            url: route('dashboard'),          active: false },
+  { label: 'Menu',    icon: 'restaurant_menu', url: route('products'),            active: false },
+  { label: 'Cart',    icon: 'shopping_cart',   url: route('cart'),               active: false, badge: cart.count > 0 ? cart.count : null },
+  { label: 'Profil',  icon: 'person',          url: '#',                         active: false },
+])
 
 // ============================================================================
 // FETCH DATA LOGIC
@@ -310,7 +331,7 @@ const frequentOrder = computed(() => {
       const p = detail.product
       if (p) {
         if (!productCounts[p.id]) {
-          productCounts[p.id] = { count: 0, name: p.name, image: p.image_url || p.image, raw: p }
+          productCounts[p.id] = { id: p.id, count: 0, name: p.name, image: p.image_url || p.image, raw: p }
         }
         productCounts[p.id].count += 1
       }
@@ -385,13 +406,19 @@ const logout = () => {
 
 const quickReorder = (item) => {
   if (!item) return
-  console.log('Quick reorder logic for:', item.name)
-  // Implementasi ke Cart Store di sini
+  const productId = item.id || item.raw?.id
+  if (productId) {
+    router.visit(route('products.detail', productId))
+  }
 }
 
 const reorder = (rawOrder) => {
-  console.log('Reorder full transaction:', rawOrder.id)
-  // Implementasi ke Cart Store di sini
+  if (!rawOrder) return
+  const firstDetail = rawOrder.details && rawOrder.details.length > 0 ? rawOrder.details[0] : null
+  const product = firstDetail ? firstDetail.product : null
+  if (product && product.id) {
+    router.visit(route('products.detail', product.id))
+  }
 }
 
 const viewDetails = (rawOrder) => {

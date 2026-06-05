@@ -1,15 +1,14 @@
 <template>
-  <div class="bg-background text-on-surface min-h-screen pb-28 md:pb-0">
+  <div class="bg-background text-on-surface min-h-screen pb-28 lg:pb-0">
 
     <!-- TopNavBar -->
-    <nav class="fixed top-0 w-full z-50 glass-nav">
-      <div class="flex justify-between items-center px-4 md:px-6 py-3 md:py-4 w-full max-w-7xl mx-auto">
+   <nav class="hidden lg:block fixed top-0 w-full z-50 glass-nav">
+      <div class="flex justify-between items-center px-4 md:px-6 py-1 w-full max-w-7xl mx-auto">
 
-        <!-- Logo + Desktop Links -->
         <div class="flex items-center gap-6 md:gap-8">
-          <span class="text-lg md:text-xl font-black tracking-tight" style="color: #800000; font-family: 'Manrope', sans-serif;">
-            GIAT Express
-          </span>
+          <Link :href="route('dashboard')" class="flex items-center">
+            <img src="/assets/icons/giat-express-icon.png" alt="GIAT Express" class="h-8 md:h-20 w-auto object-contain" />
+          </Link>
           <div class="hidden md:flex items-center gap-2">
             <Link
               v-for="link in navLinks"
@@ -28,10 +27,8 @@
           </div>
         </div>
 
-        <!-- Right Actions -->
         <div class="flex items-center gap-2 md:gap-4">
           <template v-if="authUser">
-            <!-- Mobile search toggle -->
             <button
               class="md:hidden p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-colors"
               @click="showMobileSearch = !showMobileSearch"
@@ -47,19 +44,14 @@
               >{{ cart.count }}</span>
             </Link>
 
-            <button class="hidden md:block p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-colors active:scale-95">
-              <span class="material-symbols-outlined">notifications</span>
-            </button>
+            <Link :href="route('product.wishlist')" class="hidden md:block p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container-high rounded-full transition-colors active:scale-95">
+              <span class="material-symbols-outlined">favorite</span>
+            </Link>
 
-            <div class="flex items-center group relative cursor-pointer ml-1">
+            <div class="flex items-center group relative cursor-pointer">
               <div class="w-8 h-8 rounded-full overflow-hidden bg-surface-container-high">
-                <img
-                  :src="displayAvatar"
-                  :alt="displayName"
-                  class="w-full h-full object-cover"
-                />
+                <img :src="displayAvatar" :alt="displayName" class="w-full h-full object-cover" />
               </div>
-              <!-- Dropdown Logout -->
               <div class="absolute right-0 top-10 w-48 bg-surface-container-lowest rounded-xl shadow-xl border border-outline-variant/10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[60] p-2">
                 <button @click="logout" class="w-full text-left px-4 py-3 rounded-lg hover:bg-error/10 text-error flex items-center gap-3 transition-colors">
                   <span class="material-symbols-outlined text-sm">logout</span>
@@ -68,6 +60,7 @@
               </div>
             </div>
           </template>
+
           <template v-else>
             <Link :href="route('login')" class="text-on-surface-variant hover:text-primary font-bold text-sm">Login</Link>
             <Link :href="route('register')" class="bg-primary text-white px-6 py-2 rounded-full font-bold text-sm shadow-lg hover:scale-105 transition-all">Sign Up</Link>
@@ -75,11 +68,7 @@
         </div>
       </div>
 
-      <!-- Mobile Search Expandable -->
-      <div
-        v-show="showMobileSearch"
-        class="md:hidden px-4 pb-3"
-      >
+      <div v-show="showMobileSearch" class="md:hidden px-4 pb-3">
         <div class="flex items-center bg-surface-container-low px-4 py-2.5 rounded-full">
           <span class="material-symbols-outlined text-on-surface-variant text-lg mr-2">search</span>
           <input
@@ -96,7 +85,7 @@
     </nav>
 
     <!-- Main Content -->
-    <main class="max-w-7xl mx-auto px-4 md:px-6 py-[6rem] md:py-[6rem]">
+    <main class="max-w-7xl mx-auto px-4 md:px-6 pt-6 lg:pt-[7rem] pb-32 lg:pb-[6rem]">
 
       <!-- Back Button -->
       <div class="mb-6 md:mb-8">
@@ -174,19 +163,22 @@
               </div>
             </div>
 
-            <!-- Spice Level Selector -->
-            <div class="space-y-3">
-              <label class="text-sm font-bold text-primary block">Tingkat Kepedasan</label>
+            <!-- Flavor Level Selector (Dynamic) -->
+            <div v-if="flavorConfig" class="space-y-3">
+              <label class="text-sm font-bold text-primary block" :class="{ 'opacity-50': flavorConfig.disabled }">{{ flavorConfig.label }}</label>
               <div class="flex gap-2">
                 <button
-                  v-for="level in ['Sedang', 'Pedas', 'Extra']"
+                  v-for="level in flavorConfig.levels"
                   :key="level"
-                  @click="selectSpiceLevel(level)"
+                  :disabled="flavorConfig.disabled"
+                  @click="selectFlavorLevel(level)"
                   :class="[
                     'flex-1 py-2.5 rounded-xl font-bold text-[10px] uppercase border-2 transition-all',
-                    selectedSpice === level
-                      ? 'bg-primary text-white border-primary shadow-lg'
-                      : 'bg-surface-container-high text-on-surface-variant border-transparent'
+                    flavorConfig.disabled
+                      ? 'bg-surface-container-high/40 text-on-surface-variant/40 border-outline-variant/10 cursor-not-allowed'
+                      : selectedFlavor === level
+                        ? 'bg-primary text-white border-primary shadow-lg'
+                        : 'bg-surface-container-high text-on-surface-variant border-transparent'
                   ]"
                 >
                   {{ level }}
@@ -227,27 +219,56 @@
     </main>
 
     <!-- Bottom Nav (Mobile Only) -->
-    <nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 bg-[#faf9f6]/80 backdrop-blur-md rounded-t-3xl shadow-[0_-8px_24px_rgba(128,0,0,0.04)]">
-      <Link
-        v-for="item in bottomNav"
-        :key="item.label"
-        :href="item.url"
-        :class="[
-          'flex flex-col items-center justify-center',
-          item.active ? 'text-primary' : 'text-on-surface-variant'
-        ]"
-      >
-        <span class="material-symbols-outlined">{{ item.icon }}</span>
-        <span class="text-[10px] font-bold uppercase tracking-widest mt-1">{{ item.label }}</span>
-        <span v-if="item.active" class="w-1 h-1 bg-primary rounded-full mt-0.5"></span>
-      </Link>
+    <nav class="lg:hidden glass-nav fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 rounded-t-3xl shadow-[0_-8px_24px_rgba(128,0,0,0.04)]">
+      <template v-for="navItem in bottomNav" :key="navItem.label">
+        <div
+          v-if="navItem.label === 'Profil'"
+          class="flex flex-col items-center justify-center relative cursor-pointer select-none active:scale-90 transition-transform"
+          @click="showMobileProfileMenu = !showMobileProfileMenu"
+        >
+          <div class="w-6 h-6 rounded-full overflow-hidden bg-surface-container-high mb-1">
+            <img :src="displayAvatar" :alt="displayName" class="w-full h-full object-cover" />
+          </div>
+          <span class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">{{ navItem.label }}</span>
+          
+          <!-- Dropdown/Popout for Logout -->
+          <div
+            v-if="showMobileProfileMenu"
+            class="absolute bottom-16 right-0 w-30 bg-surface-container-lowest rounded-xl shadow-xl border border-outline-variant/10 p-2 z-[60]"
+          >
+            <button
+              @click.stop="logout"
+              class="w-full text-left px-4 py-3 rounded-lg hover:bg-error/10 text-error flex items-center gap-3 transition-colors"
+            >
+              <span class="material-symbols-outlined text-sm">logout</span>
+              <span class="font-bold text-sm">Logout</span>
+            </button>
+          </div>
+        </div>
+
+        <Link
+          v-else
+          :href="navItem.url"
+          :class="[
+            'flex flex-col items-center justify-center relative transition-transform active:scale-90',
+            navItem.active ? 'text-primary' : 'text-on-surface-variant'
+          ]"
+        >
+          <span class="material-symbols-outlined mb-1">{{ navItem.icon }}</span>
+          <span class="text-[10px] font-bold uppercase tracking-widest">{{ navItem.label }}</span>
+          <span
+            v-if="navItem.badge"
+            class="absolute -top-1 -right-1 bg-primary text-white text-[8px] w-4 h-4 rounded-full flex items-center justify-center"
+          >{{ navItem.badge }}</span>
+        </Link>
+      </template>
     </nav>
 
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { usePage, Link, router } from '@inertiajs/vue3'
 import { cart } from '@/Stores/cart'
 import { route } from 'ziggy-js'
@@ -267,6 +288,7 @@ const logout = () => {
 
 const searchQuery = ref('')
 const showMobileSearch = ref(false)
+const showMobileProfileMenu = ref(false)
 
 
 const navLinks = [
@@ -295,7 +317,46 @@ const displayAvatar = computed(() => {
 })
 
 // --- STATE UI ---
-const selectedSpice = ref('Pedas')
+const parsedTags = computed(() => {
+  const tagStr = props.product?.product_features?.tags || props.product?.tags || '';
+  if (Array.isArray(tagStr)) return tagStr.map(t => String(t).toLowerCase().trim());
+  return String(tagStr).split(',').map(t => t.toLowerCase().trim()).filter(Boolean);
+})
+
+const flavorConfig = computed(() => {
+  const tags = parsedTags.value;
+  if (tags.includes('spicy') || tags.includes('pedas') || tags.includes('hot')) {
+    return {
+      label: 'Tingkat Kepedasan',
+      type: 'spicy',
+      levels: ['Sedang', 'Pedas', 'Extra'],
+      default: 'Pedas',
+      disabled: false
+    };
+  }
+  if (tags.includes('sweet') || tags.includes('manis') || tags.includes('sugar')) {
+    return {
+      label: 'Tingkat Kemanisan',
+      type: 'sweet',
+      levels: ['Sedikit Manis', 'Normal', 'Manis'],
+      default: 'Normal',
+      disabled: false
+    };
+  }
+  // Default/Fallback: hidden
+  return null;
+})
+
+const selectedFlavor = ref('')
+
+watch(flavorConfig, (newConfig) => {
+  if (newConfig) {
+    selectedFlavor.value = newConfig.default;
+  } else {
+    selectedFlavor.value = '';
+  }
+}, { immediate: true });
+
 const isFavorite = ref(false)
 
 // --- TRACKING LOGIC ---
@@ -360,26 +421,48 @@ function formatLabel(text) {
 // --- UI METHODS ---
 function goBack() { window.history.back() }
 
-function selectSpiceLevel(level) {
-    selectedSpice.value = level;
-    logInteraction(`variansi_rasa_${formatLabel(level)}`);
+function selectFlavorLevel(level) {
+    selectedFlavor.value = level;
+    const flavorType = flavorConfig.value?.type || 'rasa';
+    logInteraction(`variansi_${flavorType}_${formatLabel(level)}`);
 }
 
 function addToCart() {
     cart.add(props.product);
-    const safeLevel = formatLabel(selectedSpice.value);
-    logInteraction(`add_to_cart_detail_${safeLevel}`);
+    const flavorType = flavorConfig.value?.type || 'rasa';
+    const safeLevel = selectedFlavor.value ? formatLabel(selectedFlavor.value) : 'normal';
+    logInteraction(`add_to_cart_detail_${flavorType}_${safeLevel}`);
+}
+
+const fetchWishlist = async () => {
+  if (!authUser.value) return;
+  try {
+    const response = await fetch('/api/v1/user/wishlist', {
+      headers: {
+        'Accept': 'application/json',
+      }
+    });
+    const result = await response.json();
+    if (result && result.data) {
+      isFavorite.value = result.data.includes(props.product.id);
+    }
+  } catch (error) {
+    console.error('Failed to fetch wishlist:', error);
+  }
 }
 
 function toggleFavorite() {
     isFavorite.value = !isFavorite.value;
-    logInteraction(`is_favorited_${isFavorite.value ? 'true' : 'false'}`);
+    const trackingType = isFavorite.value ? 'wishlist' : 'unwishlist';
+    logInteraction(trackingType);
+    sendTrackingData();
 }
 
 // --- LIFECYCLE ---
 onMounted(() => {
     entryTime = Date.now()
     logInteraction('view', { url: window.location.href })
+    fetchWishlist()
 })
 
 
