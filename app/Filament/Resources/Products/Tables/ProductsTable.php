@@ -20,7 +20,7 @@ class ProductsTable
                 ImageColumn::make('image')
                     ->label('Foto')
                     ->circular()
-                    ->defaultImageUrl(fn () => '<https://ui-avatars.com/api/?name=No+Image&background=e2e8f0>'),
+                    ->defaultImageUrl(fn () => 'https://ui-avatars.com/api/?name=No+Image&background=e2e8f0'),
                 TextColumn::make('name')->label('Nama Produk')->searchable()->sortable(),
                 TextColumn::make('is_available')->label('Status')->sortable(),
                 TextColumn::make('price')
