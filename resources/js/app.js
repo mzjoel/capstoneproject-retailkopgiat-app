@@ -12,7 +12,7 @@ import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 const appName = import.meta.env.VITE_APP_NAME || 'Giat Express';
 
 createInertiaApp({
-    title: (title) => `${title} - ${appName}`,
+    title: (title) => `${title}${appName}`,
     resolve: (name) =>
         /** @type {any} */ (resolvePageComponent(
             `./Pages/${name}.vue`,

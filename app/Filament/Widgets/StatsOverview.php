@@ -15,8 +15,8 @@ class StatsOverview extends StatsOverviewWidget
     protected function getStats(): array
     {
 
-        $availableCount    = Product::where('is_available', true)->count();
-        $unavailableCount  = Product::where('is_available', false)->count();
+        // $availableCount    = Product::where('is_available', true)->count();
+        // $unavailableCount  = Product::where('is_available', false)->count();
         $todayCount     = Transaction::whereDate('created_at', today())->count();
         $yesterdayCount = Transaction::whereDate('created_at', today()->subDay())->count();
         $txChange = $yesterdayCount > 0
@@ -54,10 +54,10 @@ class StatsOverview extends StatsOverviewWidget
             : 0;
 
         return [
-             Stat::make('Produk Tersedia', $availableCount)
-                ->description("{$unavailableCount} produk tidak tersedia")
-                ->descriptionIcon('heroicon-m-cube')
-                ->color('success'),
+            //  Stat::make('Produk Tersedia', $availableCount)
+            //     ->description("{$unavailableCount} produk tidak tersedia")
+            //     ->descriptionIcon('heroicon-m-cube')
+            //     ->color('success'),
  
             Stat::make('Transaksi Hari Ini', $todayCount)
                 ->description($txDescription)

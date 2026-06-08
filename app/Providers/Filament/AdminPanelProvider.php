@@ -31,7 +31,7 @@ class AdminPanelProvider extends PanelProvider
             ->login()
             ->brandName('GIAT Express')
             ->brandLogo(asset('assets/icons/giat-express-icon.png'))
-            ->brandLogoHeight('150px')
+            ->brandLogoHeight('95px')
             ->favicon(asset('assets/icons/giat-express-icon.png'))
             ->colors([
                 'primary' => Color::Amber,
@@ -59,6 +59,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
+                \App\Http\Middleware\RedirectIfNotAdmin::class,
             ])
             ->renderHook(
                 PanelsRenderHook::HEAD_START,

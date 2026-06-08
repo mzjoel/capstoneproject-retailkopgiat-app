@@ -264,9 +264,9 @@ const displayAvatar = computed(() =>
 )
 
 const navLinks = [
-  { label: 'Beranda', url: route('dashboard'), active: true },
+  { label: 'Beranda', url: route('dashboard'), active: false },
   { label: 'Menu', url: route('products'), active: false },
-  { label: 'Pesanan', url:route('transaction.history'), active: false },
+  { label: 'Pesanan', url:route('transaction.history'), active: true },
 ]
 
 const showMobileSearch = ref(false)

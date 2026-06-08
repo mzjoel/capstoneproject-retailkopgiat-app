@@ -11,6 +11,7 @@ class TransactionChartWidget extends ChartWidget
     protected  ?string $heading = 'Grafik Transaksi';
     protected  static ?int $sort = 2;
     protected  ?string $maxHeight = '300px';
+    protected int|string|array $columnSpan = 'full';
 
     public ?string $filter = '7d';
 
