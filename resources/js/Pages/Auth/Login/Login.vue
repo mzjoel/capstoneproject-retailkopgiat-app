@@ -1,6 +1,5 @@
 <template>
   <div class="bg-surface text-on-surface min-h-screen flex flex-col">
-    <Head title="Login" />
     <!-- Login Content Wrapper -->
     <main class="flex-grow flex items-center justify-center px-6 py-12">
       <div class="w-full max-w-5xl grid md:grid-cols-2 gap-12 items-center">

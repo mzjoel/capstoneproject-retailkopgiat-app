@@ -88,7 +88,7 @@ class ProductController extends Controller
                     'id' => $product->category->id,
                     'name' => $product->category->name
                 ],
-                'image' => $product->image,
+                'image' => $product->image_url,
                 'is_available' => (bool) $product->is_available,
                 'product_features' => [
                     'tags' => $product->tags,
@@ -146,7 +146,7 @@ class ProductController extends Controller
                 'name' => $product->name,
                 'price' => (float) $product->price,
                 'category' => $product->category,
-                'image' => $product->image,
+                'image' => $product->image_url,
                 'is_available' => (bool) $product->is_available,
                 'product_features' => [
                     'tags' => $product->tags,
@@ -175,10 +175,10 @@ class ProductController extends Controller
                 'rating' => '4.8', // Placeholder for now
                 'stock' => 24,    // Placeholder for now
                 'contextBadge' => 'Menu Pilihan', // Placeholder
-                'image' => $product->image ?: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80',
+                'image' => $product->image_url ?: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80',
                 'is_available' => (bool) $product->is_available,
                 'thumbnails' => [
-                    $product->image ?: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80',
+                    $product->image_url ?: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80',
                     'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80'
                 ],
                 'meta' => [

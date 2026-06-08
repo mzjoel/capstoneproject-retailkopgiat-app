@@ -106,7 +106,7 @@ class InteractionController extends Controller{
                         'price' => 'Rp ' . number_format($product->price, 0, ',', '.'),
                         'category' => $product->category->name ?? 'Uncategorized',
                         'description' => $product->description,
-                        'image' => $product->image ?: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80',
+                        'image' => $product->image_url ?: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80',
                         'isFavorite' => true
                     ];
                 });
