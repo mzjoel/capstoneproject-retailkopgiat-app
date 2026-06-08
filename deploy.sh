@@ -27,6 +27,7 @@ if [ -d "$APP_DIR" ]; then
     npm install --quiet && npm run build --quiet
 
     log_message "⚙️ Optimasi Laravel (Clear Cache & Migrate)..."
+    php artisan storage:link
     php artisan optimize:clear --no-interaction
     php artisan migrate --force --no-interaction
     php artisan db:seed --class=AdminSeeder --force --no-interaction
