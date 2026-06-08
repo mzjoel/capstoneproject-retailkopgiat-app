@@ -18,6 +18,7 @@ class ProductsTable
         return $table
             ->columns([
                 ImageColumn::make('image')
+                    ->disk('public')
                     ->label('Foto')
                     ->circular()
                     ->defaultImageUrl(fn () => 'https://ui-avatars.com/api/?name=No+Image&background=e2e8f0'),
