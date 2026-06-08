@@ -48,6 +48,7 @@ class ProductForm
                     ]),
                 
                 FileUpload::make('image')
+                    ->disk('public')
                     ->image()
                      ->columnSpanFull()
                       ->required(),
