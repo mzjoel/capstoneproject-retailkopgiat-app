@@ -19,41 +19,37 @@ Route::get('/onboarding2', function () {
     return Inertia::render('Onboarding/Onboarding2');
 })->name('onboarding2');
 
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::middleware(['auth', 'verified', 'customer'])->group(function () {
+    Route::get('/dashboard', function () {
+        return Inertia::render('Dashboard');
+    })->name('dashboard');
 
-Route::get('/products', function () {
-    return Inertia::render('Catalog/Products');
-})->middleware(['auth', 'verified'])->name('products');
+    Route::get('/products', function () {
+        return Inertia::render('Catalog/Products');
+    })->name('products');
 
-Route::get('/products/wishlist', [ProductController::class, 'showWishlist'] )->middleware(['auth', 'verified'])->name('product.wishlist');
+    Route::get('/products/wishlist', [ProductController::class, 'showWishlist'] )->name('product.wishlist');
 
-Route::get('/cart', function () {
-    return Inertia::render('Transaction/Cart');
-})->middleware(['auth', 'verified'])->name('cart');
+    Route::get('/cart', function () {
+        return Inertia::render('Transaction/Cart');
+    })->name('cart');
 
-Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/transaction/history', [TransactionController::class, 'History'])->name('transaction.history');
+
+    Route::get('/transaction/{id}/checkout', function ($id) {
+        return Inertia::render('Transaction/Checkout', ['id' => $id]);
+    })->name('transaction');
+
+    Route::get('/transaction/{id}/status', [TransactionController::class, 'getTransactionStatus'])->name('transaction.status');
+
+    Route::get('/transaction/validation', function () {
+        return Inertia::render('Transaction/Validation');
+    })->name('validation');
+
+    Route::get('/products/{id}', [ProductController::class, 'showProductPage'])->name('products.detail');
 });
 
-Route::get('/transaction/{id}/checkout', function ($id) {
-    return Inertia::render('Transaction/Checkout', ['id' => $id]);
-})->middleware(['auth', 'verified'])->name('transaction');
-
-Route::get('/transaction/{id}/status', [TransactionController::class, 'getTransactionStatus'])->middleware(['auth', 'verified'])->name('transaction.status');
-
-Route::get('/transaction/validation', function () {
-    return Inertia::render('Transaction/Validation');
-})->middleware(['auth', 'verified'])->name('validation');
-
-Route::get('/transaction/history', function () {
-    return Inertia::render('Transaction/TransactionHistory');
-})->middleware(['auth', 'verified'])->name('transaction.history');
-
-Route::get('/products/{id}', [ProductController::class, 'showProductPage'])->middleware(['auth', 'verified'])->name('products.detail');
-
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'customer'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

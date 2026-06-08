@@ -238,9 +238,9 @@ const searchQuery = ref('')
 const displayName = computed(() => {
   return authUser.value?.customer_profile?.name || authUser.value?.admin_profile?.name || authUser.value?.email || 'User'
 })
-const displayAvatar = computed(() => {
-  return `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName.value)}&color=7F9CF5&background=EBF4FF`
-})
+const displayAvatar = computed(() => 
+  authUser.value?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName.value)}&background=800000&color=fff`
+)
 const navLinks = [
   { label: 'Beranda', url: route('dashboard'), active: false },
   { label: 'Menu', url: route('products'), active: false },

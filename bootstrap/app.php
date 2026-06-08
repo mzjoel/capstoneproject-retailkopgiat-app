@@ -28,6 +28,11 @@ return Application::configure(basePath: dirname(__DIR__))
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
         ]);
 
+        $middleware->alias([
+            'admin' => \App\Http\Middleware\RedirectIfNotAdmin::class,
+            'customer' => \App\Http\Middleware\RedirectIfAdmin::class,
+        ]);
+
         $middleware->validateCsrfTokens(except: [
             'api/v1/transactions/midtrans'
         ]);
