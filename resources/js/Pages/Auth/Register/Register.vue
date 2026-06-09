@@ -59,23 +59,14 @@
             />
 
             <!-- Password -->
-            <!-- <AuthInput
+            <AuthInput
               id="password"
               name="password"
               label="Password"
               type="password"
               v-model="form.password"
               :error="form.errors.password"
-            >
-              <template #action>
-                <a
-                  href="#"
-                  class="text-xs font-label font-semibold text-primary hover:underline underline-offset-4 transition-colors"
-                >
-                  Lupa Password?
-                </a>
-              </template>
-            </AuthInput> -->
+            />
 
              <AuthInput
               id="password_confirmation"
