@@ -64,8 +64,7 @@ export default defineConfig({
                 dontCacheBustURLsMatching: /\.[0-8a-f]{8}\./,
                 globPatterns: [
                     'assets/icons/*.png',
-                    'assets/screenshots/*.png',
-                    'build/manifest.webmanifest'
+                    'assets/screenshots/*.png'
                 ],
                 runtimeCaching: [
                     {
